@@ -8,7 +8,7 @@ use App\Models\Server;
 
 class ServerController extends Controller
 {
-    function create($id_episode, Request $rq)
+    function create($id_product,$id_episode, Request $rq)
     {
         if (!$id_episode) {
             return response()->json(['error' => 'Có lỗi xảy ra, vui lòng load lại trang']);

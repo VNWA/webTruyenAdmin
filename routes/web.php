@@ -39,10 +39,10 @@ Route::get('/', function () {
     ]);
 });
 Route::prefix('vnwa-asdghuajsdg-import-crawl')->group(function () {
-Route::prefix('manga18fx')->group(function () {
-    Route::post('/import-crawl-18', [ProductController::class, 'importManga18fxCrawl']);
-});
-Route::post('/import-crawl-18-products', [ProductController::class, 'import18ProductCrawl']);
+    Route::prefix('manga18fx')->group(function () {
+        Route::post('/import-crawl-18', [ProductController::class, 'importManga18fxCrawl']);
+    });
+    Route::post('/import-crawl-18-products', [ProductController::class, 'import18ProductCrawl']);
 
 
 
@@ -119,29 +119,38 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
     // start  truyện Bộ
     Route::prefix('products')->group(function () {
         Route::get('', [ProductController::class, 'showIndex'])->name('Product');
-        Route::post('load-data-table', [ProductController::class, 'loadDataTable']);
+        Route::get('load-data-table', [ProductController::class, 'loadDataTable']);
         Route::get('/trash', [ProductController::class, 'showTrash'])->name('Product.Trash');
         Route::get('/create', [ProductController::class, 'showCreate'])->name('Product.Create');
         Route::post('/create', [ProductController::class, 'create']);
         Route::get('/edit/{id}', [ProductController::class, 'showEdit'])->name('Product.edit');
         Route::post('/edit/{id}', [ProductController::class, 'update']);
+
+        Route::prefix('episode/{id_product}')->group(function () {
+
+            Route::get('/', [EpisodeController::class, 'index'])->name('Product.Episode');
+            Route::get('/load-data-table', [EpisodeController::class, 'loadDataTable']);
+            Route::post('/create-mutiple', [EpisodeController::class, 'importMultipleZip'])->name('Episode.Import');
+            Route::post('/delete', [EpisodeController::class, 'delete'])->name('Episode.Delete');
+
+            Route::post('/create', [EpisodeController::class, 'create']);
+            Route::post('/update/{id}', [EpisodeController::class, 'update'])->name('Episode.Update');
+            Route::prefix('server/{id_episode}')->group(function () {
+                Route::post('/create', [ServerController::class, 'create']);
+                Route::post('/update/{id}', [ServerController::class, 'update']);
+            });
+        });
+        // end Tập truyện
+        // start  Server truyện
+
+
     });
     // end  truyện Bộ
 
 
 
     // start  Tập truyện
-    Route::prefix('episode/{id_product}')->group(function () {
-        Route::post('/load-data-table', [EpisodeController::class, 'loadDataTable']);
-        Route::post('/create', [EpisodeController::class, 'create']);
-        Route::post('/update/{id}', [EpisodeController::class, 'update']);
-    });
-    // end Tập truyện
-    // start  Server truyện
-    Route::prefix('server/{id_episode}')->group(function () {
-        Route::post('/create', [ServerController::class, 'create']);
-        Route::post('/update/{id}', [ServerController::class, 'update']);
-    });
+
     // end Server truyện
 
     // start  Banner

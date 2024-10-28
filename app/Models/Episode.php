@@ -8,7 +8,8 @@ use Illuminate\Database\Eloquent\Model;
 class Episode extends Model
 {
     use HasFactory;
-    protected $fillable = ['id_product', 'name', 'slug'];
+    protected $fillable = ['id_product', 'name', 'slug', 'updated_at'];
+
     public function product()
     {
         return $this->belongsTo(Product::class, 'id_product');

@@ -8,7 +8,9 @@ import DropdownLink from '@/Components/DropdownLink.vue';
 import NavLink from '@/Components/NavLink.vue';
 import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import SideBar from '@/Components/SideBar.vue';
-
+import { usePage } from '@inertiajs/vue3';
+const page = usePage();
+console.log(page)
 defineProps({
     title: String,
 });
@@ -108,7 +110,7 @@ const logout = () => {
                                     </Dropdown>
                                 </div>
                                 <div class="ms-">
-                                    <a href="https://www.ketromtruyện.com/" target="_blank"><button class="flex items-center text-white   px-2 py-1 bg-gray-700 hover:bg-blue-600 ">
+                                    <a :href="page.props.frontendUrl" target="_blank"><button class="flex items-center text-white   px-2 py-1 bg-gray-700 hover:bg-blue-600 ">
                                             <icon icon="right-to-bracket" class="mr-2" /> Truy cập trang web
                                         </button></a>
                                 </div>

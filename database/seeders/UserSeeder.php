@@ -20,10 +20,10 @@ class UserSeeder extends Seeder
         User::create([
             'name' => 'DEV',
             'email' => 'nhatnguyen.dev.fullstack@gmail.com',
-            'password' => Hash::make('admin@123'),
+            'password' => Hash::make('dev@123'),
         ]);
         User::create([
-            'name' => 'DEV',
+            'name' => 'ADMin',
             'email' => 'admin@gmail.com',
             'password' => Hash::make('admin@123'),
         ]);

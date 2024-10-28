@@ -36,13 +36,13 @@
                         <span class="show  font-semibold text-slate-900 dark:text-slate-200">Danh mục</span>
                     </SideBarLink>
                 </li> -->
-                <li class="mb-3">
+                <!-- <li class="mb-3">
                     <SideBarLink :href="route('Year')" :active="check('/year')">
                         <icon icon="fa-calendar-days" class="mr-2" />
 
                         <span class="show  font-semibold text-slate-900 dark:text-slate-200">Năm</span>
                     </SideBarLink>
-                </li>
+                </li> -->
 
                 <li class="mb-3">
                     <SideBarLink :href="route('Nation')" :active="check('/nation')">

@@ -11,20 +11,30 @@ class Product extends Model
 {
     use HasFactory;
     use SoftDeletes;
-    protected $fillable = [ 'is_18', 'id_year', 'id_nation', 'status', 'highlight', 'rating_qnt', 'url_avatar', 'url_bg', 'date', 'full_name', 'name', 'slug', 'desc', 'meta_image', 'meta_title', 'meta_desc'];
+    protected $fillable = ['is_18', 'id_year', 'id_nation', 'status', 'highlight', 'rating_qnt', 'url_avatar', 'url_bg', 'date', 'full_name', 'name', 'slug', 'desc', 'meta_image', 'meta_title', 'meta_desc'];
     protected $appends = ['newEpisode'];
+
     public function getNewEpisodeAttribute()
     {
-        $latestEpisode = DB::table('episodes')
-            ->where('id_product', $this->id)
-            ->latest()
-            ->first();
+        $episodes = $this->latestEpisodes()->get();
 
-        // Kiểm tra nếu có episode mới nhất thì trả về true
-        // Nếu không, trả về false
-        return $latestEpisode ? $latestEpisode->name : 'COMING SOON';
+        if ($episodes->isNotEmpty()) {
+            // Trả về danh sách chứa cả name và slug của từng tập
+            return $episodes->map(function ($episode) {
+                return [
+                    'name' => $episode->name,
+                    'slug' => $episode->slug,
+                ];
+            })->reverse()->values();
+        }
+
+        return [];
     }
 
+    public function latestEpisodes()
+    {
+        return $this->hasMany(Episode::class, 'id_product')->latest('created_at')->take(2);
+    }
     public function category()
     {
         return $this->belongsTo(Category::class, 'id_category');

@@ -162,21 +162,45 @@ class ProductController extends Controller
             ->first();
         return $check ? true : false;
     }
-    public function loadDataTable()
+    public function loadDataTable(Request $request)
     {
-        $data = Product::with('episodes')->with('types')->with('year')->with('nation')->latest()->get();
+        $perPage = $request->get('per_page', 10);
+        $page = $request->get('page', 1);
+        $sortBy = $request->get('sortBy', 'created_at');
+        $sortType = $request->get('sortType', 'desc');
+        $name = $request->get('name');
+
+        // Khởi tạo query
+        $query = Product::query();
+
+        // Lọc theo tên product nếu có
+        if ($name) {
+            $query->where('name', 'like', "%$name%");
+        }
+
+        // Lọc theo danh mục nếu có
 
 
-        $trashCount = Product::onlyTrashed()->count();
+        // Sắp xếp và phân trang
+        $total = $query->count();
+        $products = $query->skip(($page - 1) * $perPage)->take($perPage)->orderBy($sortBy, $sortType)->get();
 
-        return response()->json(['data' => $data, 'trashCount' => $trashCount]);
+        return response()->json([
+            'data' => $products,
+            'current_page' => $page,
+            'per_page' => $perPage,
+            'total' => $total,
+            'last_page' => ceil($total / $perPage),
+        ], 200);
+
+
+
+
     }
     function showIndex()
     {
-        $jsonData = $this->loadDataTable()->getContent(); // Lấy nội dung JSON response
-        $data = json_decode($jsonData, true)['data']; // Giải mã JSON và lấy giá trị của 'data'
-        $trashCount = json_decode($jsonData, true)['trashCount'];
-        return Inertia::render('Product/Show', ['data' => $data, 'trashCountNumber' => $trashCount]);
+
+        return Inertia::render('Product/Show');
     }
 
     function showCreate()
@@ -315,6 +339,7 @@ class ProductController extends Controller
             $product->url_avatar = $request->url_avatar;
             $product->url_bg = $request->url_bg;
             $product->full_name = $request->full_name;
+            $product->id_nation = $request->id_nation;
             $product->date = $request->date;
             $product->name = $request->name;
             $product->slug = $request->slug;

@@ -109,7 +109,7 @@ const sendProductsToLaravel = async (products, url_import) => {
 // Chạy crawler
 (async () => {
     const url_web = 'https://manga18fx.com/manga-genre/raw';
-    const url_import = 'http://127.0.0.1:8000/vnwa-asdghuajsdg-import-crawl/manga18fx/import-crawl-18';
+    const url_import = 'https://demo1.vinawebapp.com/vnwa-asdghuajsdg-import-crawl/manga18fx/import-crawl-18';
     const products = await crawlMultipleProducts(url_web);
     await sendProductsToLaravel(products, url_import);
 

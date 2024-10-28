@@ -20,14 +20,14 @@ class ClientController extends Controller
     function getDataSitemap()
     {
         $data = [];
-        $data =  Product::where('status', 1)
-        ->latest()
-        ->get(['slug', 'updated_at'])
-        ->map(function ($item) {
-            $item->slug = '/truyen/' . $item->slug; // Thêm giá trị vào slug
-            return $item;
-        })
-        ->toArray();
+        $data = Product::where('status', 1)
+            ->latest()
+            ->get(['slug', 'updated_at'])
+            ->map(function ($item) {
+                $item->slug = '/truyen/' . $item->slug; // Thêm giá trị vào slug
+                return $item;
+            })
+            ->toArray();
         $dataNation = Nation::where('status', 1)
             ->latest()
             ->get(['slug', 'updated_at'])
@@ -62,15 +62,34 @@ class ClientController extends Controller
 
     function getDataHome()
     {
+        // Lấy danh sách ID sản phẩm từ ProductBanner
+        $listIdProduct = ProductBanner::where('status', 1)
+            ->orderBy('ORD', 'ASC')
+            ->pluck('id_product')
+            ->toArray();
 
+        // Lấy các sản phẩm nổi bật nếu danh sách ID không rỗng
+        $highlightProducts = !empty($listIdProduct)
+            ? Product::whereIn('id', $listIdProduct)
+                ->where('status', 1)
+                ->where('highlight', 1)
+                ->latest()
+                ->take(10)
+                ->get()
+            : [];
 
-        $highlightProducts = Product::where('status', 1)->where('highlight', 1)->take(10)->latest()->get();
-        $newProducts = Product::where('status', 1)->latest()->take(50)->get();
-
-
-
-        return response()->json(['highlightProducts' => $highlightProducts, 'newProducts' => $newProducts], 200);
+        // Lấy các sản phẩm mới nhất
+        $newProducts = Product::where('status', 1)
+            ->latest()
+            ->take(20)
+            ->get();
+        // Trả về JSON response
+        return response()->json([
+            'highlightProducts' => $highlightProducts,
+            'newProducts' => $newProducts
+        ], 200);
     }
+
     function getProducts()
     {
 
