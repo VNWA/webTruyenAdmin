@@ -17,31 +17,69 @@ use App\Models\Server;
 use Carbon\Carbon;
 class ClientController extends Controller
 {
+    public function incrementViews($slug)
+    {
+        $product = Product::where('slug', $slug)->first(); // Tìm sản phẩm theo ID
+        if ($product) {
+            $product->incrementViews(); // Tăng lượt xem
+        }
+        return true;
+    }
     function getDataSitemap()
     {
         $data = [];
-        $data = Product::where('status', 1)
-            ->latest()
+
+        // Lấy dữ liệu từ Product
+        $products = Product::where('status', 1)
+            ->latest('updated_at')
             ->get(['slug', 'updated_at'])
             ->map(function ($item) {
-                $item->slug = '/truyen/' . $item->slug; // Thêm giá trị vào slug
-                return $item;
-            })
-            ->toArray();
-        $dataNation = Nation::where('status', 1)
-            ->latest()
+                return [
+                    'slug' => '/manga/' . $item->slug,
+                    'updated_at' => $item->updated_at,
+                ];
+            })->toArray();
+
+        $data = array_merge($data, $products); // Thêm vào mảng chính
+
+        // Lấy dữ liệu từ Episode với hạn chế N+1
+        $episodes = Episode::with('product:id,slug')
+            ->latest('updated_at')
+            ->get(['slug', 'id_product', 'updated_at'])
+            ->map(function ($item) {
+                return [
+                    'slug' => '/manga/' . $item->product->slug . '/' . $item->slug,
+                    'updated_at' => $item->updated_at,
+                ];
+            })->toArray();
+
+        $data = array_merge($data, $episodes);
+
+        // Lấy dữ liệu từ Nation
+        $nations = Nation::where('status', 1)
+            ->latest('updated_at')
             ->get(['slug', 'updated_at'])
-            ->toArray();
-        foreach ($dataNation as $key => $value) {
-            $push = array_push($data, ['slug' => '/quoc-gia-' . $value['slug'], 'updated_at' => $value['updated_at']]);
-        }
-        $dataType = Type::where('status', 1)
-            ->latest()
+            ->map(function ($item) {
+                return [
+                    'slug' => '/nation-' . $item->slug,
+                    'updated_at' => $item->updated_at,
+                ];
+            })->toArray();
+
+        $data = array_merge($data, $nations);
+
+        // Lấy dữ liệu từ Type
+        $types = Type::where('status', 1)
+            ->latest('updated_at')
             ->get(['slug', 'updated_at'])
-            ->toArray();
-        foreach ($dataType as $key => $value) {
-            $push = array_push($data, ['slug' => '/the-loai-' . $value['slug'], 'updated_at' => $value['updated_at']]);
-        }
+            ->map(function ($item) {
+                return [
+                    'slug' => '/type-' . $item->slug,
+                    'updated_at' => $item->updated_at,
+                ];
+            })->toArray();
+
+        $data = array_merge($data, $types);
 
         return $data;
     }
@@ -51,38 +89,27 @@ class ClientController extends Controller
         $dataType = Type::where('status', 1)
             ->orderBy('ORD')
             ->get(['name', 'slug']);
-        $dataNation = Nation::where('status', 1)
-            ->orderBy('ORD')
-            ->get(['name', 'slug']);
-        $dataYear = Year::where('status', 1)
-            ->orderBy('name', 'DESC')
-            ->get();
-        return response()->json(['dataWeb' => $dataWeb, 'dataType' => $dataType, 'dataNation' => $dataNation, 'dataYear' => $dataYear], 200);
+
+
+        $topViewProducts = Product::where('status', 1)
+            ->take(10)
+            ->orderByDesc('views')
+            ->get(['id', 'url_avatar', 'name', 'slug', 'full_name']);
+        return response()->json(['dataWeb' => $dataWeb, 'dataType' => $dataType, 'topViewProducts' => $topViewProducts], 200);
     }
 
     function getDataHome()
     {
-        // Lấy danh sách ID sản phẩm từ ProductBanner
-        $listIdProduct = ProductBanner::where('status', 1)
-            ->orderBy('ORD', 'ASC')
-            ->pluck('id_product')
-            ->toArray();
 
-        // Lấy các sản phẩm nổi bật nếu danh sách ID không rỗng
-        $highlightProducts = !empty($listIdProduct)
-            ? Product::whereIn('id', $listIdProduct)
-                ->where('status', 1)
-                ->where('highlight', 1)
-                ->latest()
-                ->take(10)
-                ->get()
-            : [];
-
-        // Lấy các sản phẩm mới nhất
-        $newProducts = Product::where('status', 1)
-            ->latest()
-            ->take(20)
+        $highlightProducts = Product::where('status', 1)
+            ->take(5)
+            ->orderByDesc('views')
             ->get();
+        // Lấy các sản phẩm mới nhất
+
+        $newProducts = Product::where('status', 1)->latest('updated_at')->paginate(16)->setPath('');
+
+
         // Trả về JSON response
         return response()->json([
             'highlightProducts' => $highlightProducts,
@@ -90,12 +117,23 @@ class ClientController extends Controller
         ], 200);
     }
 
+    function getTrendingProducts()
+    {
+
+
+        $products = Product::where('status', 1)->latest('views')->paginate(15)->setPath('');
+
+
+
+
+        return response()->json(['products' => $products], 200);
+    }
     function getProducts()
     {
 
 
-        $products = Product::where('status', 1)->latest()->paginate(15)->setPath('');
-        ;
+        $products = Product::where('status', 1)->latest('updated_at')->paginate(15)->setPath('');
+
 
 
 
@@ -194,7 +232,7 @@ class ClientController extends Controller
 
         $dataProduct = Product::where('id_category', $category->id)
             ->where('status', 1)
-            ->latest()
+            ->latest('updated_at')
             ->paginate(20)
             ->setPath('');
 
@@ -238,7 +276,7 @@ class ClientController extends Controller
             $listIdProduct[$key] = $value->id_product;
         }
 
-        $products = Product::whereIn('id', $listIdProduct)->where('status', 1)->latest()->paginate(20)->setPath('');
+        $products = Product::whereIn('id', $listIdProduct)->where('status', 1)->latest('updated_at')->paginate(20)->setPath('');
         $company = Company::first(['meta_title', 'meta_desc', 'meta_image']);
         $title = $type->name;
         $meta_title = $type->meta_title ?: $type->name;
@@ -264,7 +302,7 @@ class ClientController extends Controller
 
         $products = Product::where('id_nation', $nation->id)
             ->where('status', 1)
-            ->latest()
+            ->latest('updated_at')
             ->paginate(20)
             ->setPath('');
         $company = Company::first(columns: ['meta_title', 'meta_desc', 'meta_image']);
@@ -292,7 +330,7 @@ class ClientController extends Controller
 
         $dataProduct = Product::where('id_year', $year->id)
             ->where('status', 1)
-            ->latest()
+            ->latest('updated_at')
             ->paginate(20)
             ->setPath('');
 
@@ -331,7 +369,7 @@ class ClientController extends Controller
             $products = Product::where('status', 1)
                 ->where('name', 'LIKE', "%$searchText%")
                 ->orWhere('full_name', 'LIKE', "%$searchText%")
-                ->latest()
+                ->latest('updated_at')
                 ->get(['name', 'full_name', 'url_avatar', 'slug']);
         }
 

@@ -166,8 +166,8 @@ class ProductController extends Controller
     {
         $perPage = $request->get('per_page', 10);
         $page = $request->get('page', 1);
-        $sortBy = $request->get('sortBy', 'created_at');
-        $sortType = $request->get('sortType', 'desc');
+        $sortBy = $request->get('sortBy', 'updated_at');
+        $sortType = $request->get('sortType', 'DESC');
         $name = $request->get('name');
 
         // Khởi tạo query
@@ -183,7 +183,7 @@ class ProductController extends Controller
 
         // Sắp xếp và phân trang
         $total = $query->count();
-        $products = $query->skip(($page - 1) * $perPage)->take($perPage)->orderBy($sortBy, $sortType)->get();
+        $products = $query->skip(($page - 1) * $perPage)->take($perPage)->latest( 'updated_at')->get();
 
         return response()->json([
             'data' => $products,

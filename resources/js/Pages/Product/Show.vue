@@ -25,7 +25,7 @@
                         </Link>
                     </div>
 
-                    <div class="my-2 py-10">
+                    <div class="my-2 py-10" v-if="!isTableLoading">
                         <div class="mb-2">
                             <div class="flex items-center justify-end">
                                 <span class="me-3">Tìm kiếm :</span>
@@ -36,7 +36,7 @@
                         </div>
 
                         <DataTable :key="reRender" v-model:server-options="serverOptions" :headers="headers"
-                            :items="items" :server-items-length="serverItemsLength" :loading="isTableLoading"
+                            :items="items" :server-items-length="serverItemsLength"
                             buttons-pagination show-index v-model:items-selected="itemsSelected">
 
                             <template #item-name="{ id, name, full_name, url_avatar }">
@@ -110,12 +110,12 @@
 
                             <template #item-episode="{ newEpisode, id }">
                                 <div class="flex items-center justify-center">
-                                    <div class="flex items-center jsutiy-center gap-3">
+                                    <!-- <div class="flex items-center jsutiy-center gap-3">
                                         ....
                                         <span v-for="(item, index) in newEpisode.reverse()" :key="index">
                                             {{ item.name }}
                                         </span>
-                                    </div>
+                                    </div> -->
 
                                     <div class="ms-5">
                                         <Link :href="route('Product.Episode', id)">
@@ -185,169 +185,160 @@
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
 import { Link, usePage } from '@inertiajs/vue3';
-import { computed, onMounted, ref, watch } from 'vue';
+import { computed, onMounted, ref, watch, nextTick } from 'vue';
 import DialogModal from '@/Components/DialogModal.vue';
 import { toast } from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
 import axios from 'axios';
-const isTableLoading = ref(false)
-const isModal = ref(false)
+import { debounce } from 'lodash'; // Sử dụng lodash cho debounce
 
-
-const items = ref([])
-
+// Biến trạng thái
+const isTableLoading = ref(false);
+const isModal = ref(false);
+const items = ref([]);
 const reRender = ref(1);
 const serverItemsLength = ref(0);
+
+// Các tùy chọn server-side
 const serverOptions = ref({
-    page: 1,
-    rowsPerPage: 10,
-    sortBy: 'created_at',
-    sortType: 'desc',
-    name: '',
+  page: 1,
+  rowsPerPage: 10,
+  sortBy: 'created_at',
+  sortType: 'desc',
+  name: '',
 });
 
-watch(serverOptions, () => {
-    loadFromServer();
-}, { deep: true });
-
+// URL API từ server dựa trên các tùy chọn
 const restApiUrl = computed(() => {
-    const { page, rowsPerPage, sortBy, sortType, name } = serverOptions.value;
-    let url = `/products/load-data-table?page=${page}&per_page=${rowsPerPage}&sortBy=${sortBy}&sortType=${sortType}`;
-    if (name) {
-        url += `&name=${name}`
-    }
-    return url;
+  const { page, rowsPerPage, sortBy, sortType, name } = serverOptions.value;
+  let url = `/products/load-data-table?page=${page}&per_page=${rowsPerPage}&sortBy=${sortBy}&sortType=${sortType}`;
+  if (name) url += `&name=${name}`;
+  return url;
 });
 
+// Hàm tải dữ liệu từ server
 const loadFromServer = async () => {
-    isTableLoading.value = true;
-    reRender.value++;
-    try {
-        const response = await axios.get(restApiUrl.value);
-        items.value = response.data.data;
-        serverItemsLength.value = response.data.total;
-    } catch (error) {
-        console.error(error);
-    } finally {
-        isTableLoading.value = false;
-    }
+  if (isTableLoading.value) return; // Tránh gọi trùng lặp
+  isTableLoading.value = true;
+  reRender.value++;
 
+  try {
+    const response = await axios.get(restApiUrl.value);
+    await nextTick(); // Đảm bảo render trước khi cập nhật
+    const data = await response.data
+    items.value = data.data;
+    // serverItemsLength.value = response.data.total;
+  } catch (error) {
+    console.error(error);
+  } finally {
+    isTableLoading.value = false;
+  }
+};
+// Watcher cho từng thuộc tính để hạn chế vòng lặp
+watch(() => serverOptions.value.page, loadFromServer);
+watch(() => serverOptions.value.rowsPerPage, loadFromServer);
+watch(() => serverOptions.value.sortBy, loadFromServer);
+watch(() => serverOptions.value.sortType, loadFromServer);
+watch(() => serverOptions.value.name, debounce(loadFromServer, 300)); // Giới hạn tần suất gọi
+
+
+// Khởi động khi component được mount
+onMounted(() => {
+  loadFromServer();
+});
+
+// Các biến liên quan đến tìm kiếm và chọn item
+const searchField = ref('name');
+const searchValue = ref();
+const checkboxDeleteToTrash = ref(false);
+const itemsDelete = ref([]);
+const modalDelete = ref(false);
+const itemsSelected = ref([]);
+const headers = [
+  { text: 'Tên dữ liệu', value: 'name' },
+  { text: 'Nổi bật', value: 'highlight' },
+  { text: 'Ẩn Hiện', value: 'status' },
+  { text: 'Hành động', value: 'operation' },
+  { text: 'Tập truyện', value: 'episode' },
+];
+
+// Hàm xử lý xóa nhiều item
+const deleteItems = async () => {
+  const dataDelete = itemsDelete.value.map(item => item.id);
+
+  try {
+    await axios.post('/delete-items', {
+      tb: 'products',
+      dataId: dataDelete,
+      trash: false,
+    });
+    loadFromServer();
+    modalDelete.value = false;
+    toast.success('Xóa dữ liệu thành công', { autoClose: 1500 });
+  } catch (error) {
+    console.error('Error while deleting items:', error);
+  }
 };
 
-onMounted(() => {
-    loadFromServer();
-})
-
-
-const searchField = ref("name");
-const searchValue = ref();
-
-
-
-
-const checkboxDeleteToTrash = ref(false);
-const itemsDelete = ref([])
-const modalDelete = ref(false)
-const itemsSelected = ref([])
-const headers = [
-    { text: "Tên dữ liệu", value: "name" },
-    { text: "Nổi bật", value: "highlight" },
-    { text: "Ản Hiện", value: "status" },
-    { text: "Hành động", value: "operation" },
-    { text: "Tập truyện", value: "episode" },
-];
-const deleteItems = async () => {
-
-    const dataDelete = [];
-    itemsDelete.value.forEach(element => {
-        dataDelete.push(element.id)
-
-    });
-    try {
-        const response = await axios.post('/delete-items', {
-            tb: 'products',
-            dataId: dataDelete,
-            trash: false,
-        });
-
-        loadFromServer();
-        modalDelete.value = false;
-        toast.success("Xóa dữ liệu thành công", {
-            autoClose: 1500,
-        });
-
-    } catch (error) {
-        console.error('Error while changing status:', error);
-    }
-}
+// Hiển thị modal xóa nhiều item
 const showModalDeleteMutipleItem = () => {
+  itemsDelete.value = itemsSelected.value.map(item => ({
+    id: item.id,
+    name: item.name,
+  }));
+  modalDelete.value = true;
+};
 
-    itemsDelete.value = [];
-    itemsSelected.value.forEach(element => {
-        itemsDelete.value.push({ id: element.id, name: element.name })
-
-    });
-    modalDelete.value = true;
-
-}
+// Hiển thị modal xóa item đơn lẻ
 const showModalDeleteItem = (deleteId, deleteName) => {
-    itemsDelete.value = [];
-    itemsDelete.value.push({ id: deleteId, name: deleteName })
-    modalDelete.value = true;
+  itemsDelete.value = [{ id: deleteId, name: deleteName }];
+  modalDelete.value = true;
+};
 
-}
+// Hàm thay đổi trạng thái (Ẩn/Hiện)
 const handleStatusChange = async (id, currentStatus) => {
-    isTableLoading.value = true;
+  if (isTableLoading.value) return; // Tránh gọi trùng lặp
+  isTableLoading.value = true;
 
-    try {
-        const newStatus = currentStatus == 1 ? 0 : 1;
-        // Gửi POST request tới server để thay đổi giá trị status
-        const response = await axios.post('/change-status', {
-            tb: 'products',
-            id: id,
-            status: newStatus, // Chuyển đổi giá trị status
-        });
-        if (newStatus == 1) {
-            toast.success("Hiện dữ liệu thành công", {
-                autoClose: 1000,
-            });
-            loadFromServer();
+  try {
+    const newStatus = currentStatus === 1 ? 0 : 1;
+    await axios.post('/change-status', {
+      tb: 'products',
+      id: id,
+      status: newStatus,
+    });
 
-
-
-        } else {
-            toast.success("Ẩn dữ liệu thành công", {
-                autoClose: 1000,
-            });
-            this.loading = false;
-            loadFromServer();
-
-
-        }
-    } catch (error) {
-        console.error('Error while changing status:', error);
-    }
-}
-const handleHighlightChange = async (id, highlight) => {
-
-    isTableLoading.value = true;
-    try {
-        const newHighlight = highlight == 1 ? 0 : 1;
-        // Gửi POST request tới server để thay đổi giá trị status
-        const response = await axios.post('/change-highlight', {
-            tb: 'products',
-            id: id,
-            highlight: newHighlight, // Chuyển đổi giá trị status
-        });
-        toast.success("Chỉnh sửa hightlight thành công!", {
-            autoClose: 1000,
-        });
-        loadFromServer();
-    } catch (error) {
-        console.error('Error while changing status:', error);
-    }
+    toast.success(
+      newStatus === 1 ? 'Hiện dữ liệu thành công' : 'Ẩn dữ liệu thành công',
+      { autoClose: 1000 }
+    );
+    loadFromServer();
+  } catch (error) {
+    console.error('Error while changing status:', error);
+  } finally {
     isTableLoading.value = false;
+  }
+};
 
-}
+// Hàm thay đổi nổi bật (highlight)
+const handleHighlightChange = async (id, highlight) => {
+  if (isTableLoading.value) return; // Tránh gọi trùng lặp
+  isTableLoading.value = true;
 
+  try {
+    const newHighlight = highlight === 1 ? 0 : 1;
+    await axios.post('/change-highlight', {
+      tb: 'products',
+      id: id,
+      highlight: newHighlight,
+    });
+
+    toast.success('Chỉnh sửa highlight thành công!', { autoClose: 1000 });
+    loadFromServer();
+  } catch (error) {
+    console.error('Error while changing highlight:', error);
+  } finally {
+    isTableLoading.value = false;
+  }
+};
 </script>

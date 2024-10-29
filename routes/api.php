@@ -31,6 +31,8 @@ Route::prefix('v1')->group(function () {
     Route::post('product/rating', [ClientController::class, 'ratingProduct']);
     Route::get('get-episode/{slug}/{episode_slug}', [ClientController::class, 'getDataEpisode']);
     Route::get('/get-data-page-category/{slug}', [ClientController::class, 'getDataPageCategory']);
+    Route::get('/increment-views/{slug}', [ClientController::class, 'incrementViews']);
+    Route::get('get-data-trending-products', [ClientController::class, 'getTrendingProducts']);
 
     Route::get('/get-data-products-by-type/{slug}', [ClientController::class, 'getProductsByType']);
     Route::get('/get-data-products-by-nation/{slug}', [ClientController::class, 'getProductsByNation']);

@@ -11,9 +11,12 @@ class Product extends Model
 {
     use HasFactory;
     use SoftDeletes;
-    protected $fillable = ['is_18', 'id_year', 'id_nation', 'status', 'highlight', 'rating_qnt', 'url_avatar', 'url_bg', 'date', 'full_name', 'name', 'slug', 'desc', 'meta_image', 'meta_title', 'meta_desc'];
+    protected $fillable = ['is_18', 'id_year', 'views', 'id_nation', 'status', 'highlight', 'rating_qnt', 'url_avatar', 'url_bg', 'date', 'full_name', 'name', 'slug', 'desc', 'meta_image', 'meta_title', 'meta_desc', 'updated_at'];
     protected $appends = ['newEpisode'];
-
+    public function incrementViews()
+    {
+        $this->increment('views'); // Tăng giá trị của trường views
+    }
     public function getNewEpisodeAttribute()
     {
         $episodes = $this->latestEpisodes()->get();
@@ -33,7 +36,7 @@ class Product extends Model
 
     public function latestEpisodes()
     {
-        return $this->hasMany(Episode::class, 'id_product')->latest('created_at')->take(2);
+        return $this->hasMany(Episode::class, 'id_product')->latest('updated_at')->take(2);
     }
     public function category()
     {
@@ -53,7 +56,7 @@ class Product extends Model
     }
     public function episodes()
     {
-        return $this->hasMany(Episode::class, 'id_product')->orderByDesc('id');
+        return $this->hasMany(Episode::class, 'id_product')->latest('updated_at');
 
     }
     public function product_banner()

@@ -25,6 +25,7 @@ return new class extends Migration {
             $table->string('name');
             $table->string('slug')->unique();
             $table->longText('desc')->nullable();
+            $table->unsignedInteger('views')->default(0);
             $table->text('meta_image')->nullable();
             $table->string('meta_title')->nullable();
             $table->text('meta_desc')->nullable();
