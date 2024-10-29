@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\CustomerController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -40,6 +41,14 @@ Route::prefix('v1')->group(function () {
     Route::get('/get-data-page-year/{slug}', [ClientController::class, 'getDataPageYear']);
     Route::get('/get-search-suggest/{searchText}', [ClientController::class, 'getSearchSuggest']);
 
+    Route::post('/register', [CustomerController::class, 'register']);
+    Route::post('/login', [CustomerController::class, 'login']);
+    Route::middleware(['auth:sanctum'])->group(function () {
 
+        Route::get('/customer', function (Request $request) {
+            $user = $request->user();
+            return response()->json($user);
+        });
+    });
 
 });
