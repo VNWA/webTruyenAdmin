@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
+use App\Models\CustomerNotification;
 use App\Models\Product;
 use App\Models\Wishlist;
 use Hash;
@@ -11,6 +12,54 @@ use Validator;
 
 class CustomerController extends Controller
 {
+    public function loadCustomer(Request $request)
+    {
+        $customer = $request->user();
+        if (!$customer) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+        // $countNewNotifcation = CustomerNotification::where('customer_id', $customer->id)->where('is_view', 0)->count();
+        return response()->json(['customer' => $customer], 200);
+
+    }
+    public function loadCountNewNotification(Request $request)
+    {
+        $customer = $request->user();
+
+        if (!$customer) {
+            return response()->json(['error' => 'Unauthorized'], 401);
+        }
+
+        $countNewNotification = CustomerNotification::where('customer_id', $customer->id)
+            ->where('is_view', 0)
+            ->count();
+
+        return response()->json(['countNewNotification' => $countNewNotification], 200);
+    }
+    public function setIsViewNotification(Request $request)
+    {
+        // Kiểm tra xem người dùng có đăng nhập hay không
+        if (!$request->user()) {
+            return response()->json(['message' => "Please Login"], 401);
+        }
+        $customer = $request->user();
+        // Kiểm tra nếu có notificationIds trong yêu cầu
+        // Cập nhật trường is_view thành 1 cho các thông báo có ID trong notificationIds
+        CustomerNotification::where('customer_id', $customer->id)
+            ->update(['is_view' => 1]); // Sửa ở đây: sử dụng => thay vì chỉ dấu phẩy
+
+        return response()->json(['message' => 'oke'], 200);
+    }
+    public function loadNotfications(Request $request)
+    {
+        if (!$request->user()) {
+            return response()->json(['message' => "Please Login"], 401);
+        }
+        $customer = $request->user();
+        $notifications = $customer->notifications()->latest()->get();
+        return response()->json($notifications, 200); // Trả về status 200
+    }
+
     public function loadWishlist(Request $request)
     {
         if (!$request->user()) {

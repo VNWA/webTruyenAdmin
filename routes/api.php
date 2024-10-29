@@ -45,10 +45,14 @@ Route::prefix('v1')->group(function () {
     Route::post('/login', [CustomerController::class, 'login']);
     Route::middleware(['auth:sanctum'])->group(function () {
 
-        Route::get('/customer', function (Request $request) {
-            $user = $request->user();
-            return response()->json($user);
-        });
+
+        Route::get('/customer', [CustomerController::class, 'loadCustomer']);
+        Route::get('/count-new-notification', [CustomerController::class, 'loadCountNewNotification']);
+
+
+        Route::get('/notifications', [CustomerController::class, 'loadNotfications']);
+        Route::get('/set-is-view-notfications', [CustomerController::class, 'setIsViewNotification']);
+
         Route::get('/wishlists', [CustomerController::class, 'loadWishlist']);
         Route::post('/toggle-wishlist', [CustomerController::class, 'toogleWishlist']);
 

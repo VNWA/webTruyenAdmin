@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Hash;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Laravel\Sanctum\HasApiTokens;
@@ -17,4 +18,23 @@ class Customer extends Model
         'otp',
         'otp_expires_at',
     ];
+    public function notifications()
+    {
+        return $this->hasMany(CustomerNotification::class);
+    }
+
+    // A customer can have many products in their wishlist.
+    public function wishlists()
+    {
+        return $this->hasMany(Wishlist::class);
+    }
+
+    /**
+     * Mutator for hashing the password before saving.
+     */
+    public function setPasswordAttribute($password)
+    {
+        $this->attributes['password'] = Hash::make($password);
+    }
+
 }
