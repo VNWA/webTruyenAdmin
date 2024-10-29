@@ -32,9 +32,6 @@ class Customer extends Model
     /**
      * Mutator for hashing the password before saving.
      */
-    public function setPasswordAttribute($password)
-    {
-        $this->attributes['password'] = Hash::make($password);
-    }
+
 
 }

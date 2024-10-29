@@ -157,7 +157,7 @@ class CustomerController extends Controller
     {
         // 1. Kiểm tra và validate dữ liệu đầu vào
         $validator = Validator::make($request->all(), [
-            'username' => 'required|string|exists:customers,username',
+            'username' => 'required|string',
             'password' => 'required|string|min:6', // Kiểm tra độ dài mật khẩu tối thiểu
         ]);
 
