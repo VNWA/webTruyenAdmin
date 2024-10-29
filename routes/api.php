@@ -49,6 +49,10 @@ Route::prefix('v1')->group(function () {
             $user = $request->user();
             return response()->json($user);
         });
+        Route::get('/wishlists', [CustomerController::class, 'loadWishlist']);
+        Route::post('/toggle-wishlist', [CustomerController::class, 'toogleWishlist']);
+
+
     });
 
 });
