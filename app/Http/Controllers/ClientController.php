@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Wishlist;
 use Illuminate\Http\Request;
 use App\Models\Company;
 use App\Models\Type;
@@ -153,12 +154,15 @@ class ClientController extends Controller
         $meta_desc = $product->meta_desc ?: $company->meta_desc;
         $meta_image = $product->meta_image ?: $company->meta_image;
 
+        $countWishlist = Wishlist::where('product_id', $product->id)->count();
+
         return response()->json([
             'title' => $title,
             'meta_title' => $meta_title,
             'meta_desc' => $meta_desc,
             'meta_image' => $meta_image,
             'product' => $product,
+            'count_wishlist' => $countWishlist,
         ], 200);
     }
 

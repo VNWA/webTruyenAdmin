@@ -38,12 +38,13 @@ class EpisodeController extends Controller
                     'updated_at' => now(),
                 ]
             );
-            Product::where('id', $id_product)->update(['updated_at' => now()]);
+            $product = Product::find($id_product);
+            $product->update(['updated_at' => now()]);
 
             $episode->save();
             $episode->product->touch();
             // Tạo đường dẫn thư mục giải nén
-            $extractPath = "public/images/fix/episodes/{$slug}";
+            $extractPath = "public/images/fix/{$product->slug}/{$slug}";
             Storage::makeDirectory($extractPath); // Tạo thư mục nếu chưa tồn tại
 
             // Lưu file zip tạm vào storage
@@ -159,8 +160,8 @@ class EpisodeController extends Controller
                 Episode::where('id', $id)
                     ->where('id_product', $id_product)
                     ->update(['name' => $rq->name, 'slug' => $slug]);
-                    Product::where('id', $id_product)->update(['updated_at' => now()]);
-                    return response()->json(['success' => 'Sửa  tên tập thành công thành công']);
+                Product::where('id', $id_product)->update(['updated_at' => now()]);
+                return response()->json(['success' => 'Sửa  tên tập thành công thành công']);
             }
         } else {
             return response()->json(['error' => 'Nhập tên']);
