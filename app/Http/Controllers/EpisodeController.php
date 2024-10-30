@@ -41,7 +41,7 @@ class EpisodeController extends Controller
             }
 
             $product = Product::find($id_product);
-            $product->update(['updated_at' => now()]);
+            $product->touch();
 
             $episode->save();
             $episode->product->touch();

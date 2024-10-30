@@ -36,7 +36,7 @@ class Product extends Model
 
     public function latestEpisodes()
     {
-        return $this->hasMany(Episode::class, 'id_product')->latest()->take(2);
+        return $this->hasMany(Episode::class, 'id_product')->latest('id')->take(2);
     }
     public function category()
     {
@@ -56,7 +56,7 @@ class Product extends Model
     }
     public function episodes()
     {
-        return $this->hasMany(Episode::class, 'id_product')->latest();
+        return $this->hasMany(Episode::class, 'id_product')->latest('id');
 
     }
     public function product_banner()
