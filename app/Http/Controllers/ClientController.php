@@ -140,6 +140,17 @@ class ClientController extends Controller
 
         return response()->json(['products' => $products], 200);
     }
+    public function getWishlistCountWithProduct($slug)
+    {
+        $product = Product::where('slug', $slug)->first();
+        if ($product) {
+            $countWishlist = Wishlist::where('product_id', $product->id)->count();
+
+            return response()->json([
+                'count_wishlist' => $countWishlist,
+            ], 200);
+        }
+    }
     function getDetailProduct($slug)
     {
         $company = Company::first(['meta_title', 'meta_desc', 'meta_image']);
@@ -154,7 +165,6 @@ class ClientController extends Controller
         $meta_desc = $product->meta_desc ?: $company->meta_desc;
         $meta_image = $product->meta_image ?: $company->meta_image;
 
-        $countWishlist = Wishlist::where('product_id', $product->id)->count();
 
         return response()->json([
             'title' => $title,
@@ -162,7 +172,6 @@ class ClientController extends Controller
             'meta_desc' => $meta_desc,
             'meta_image' => $meta_image,
             'product' => $product,
-            'count_wishlist' => $countWishlist,
         ], 200);
     }
 

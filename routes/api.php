@@ -29,6 +29,7 @@ Route::prefix('v1')->group(function () {
     Route::get('get-data-home', [ClientController::class, 'getDataHome']);
     Route::get('get-data-products', [ClientController::class, 'getProducts']);
     Route::get('get-detail-product/{slug}', [ClientController::class, 'getDetailProduct']);
+    Route::get('get-wishlist-count-with-product/{slug}', [ClientController::class, 'getWishlistCountWithProduct']);
     Route::post('product/rating', [ClientController::class, 'ratingProduct']);
     Route::get('get-episode/{slug}/{episode_slug}', [ClientController::class, 'getDataEpisode']);
     Route::get('/get-data-page-category/{slug}', [ClientController::class, 'getDataPageCategory']);
