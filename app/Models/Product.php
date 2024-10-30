@@ -12,10 +12,19 @@ class Product extends Model
     use HasFactory;
     use SoftDeletes;
     protected $fillable = ['is_18', 'id_year', 'views', 'id_nation', 'status', 'highlight', 'rating_qnt', 'url_avatar', 'url_bg', 'date', 'full_name', 'name', 'slug', 'desc', 'meta_image', 'meta_title', 'meta_desc'];
-    protected $appends = ['newEpisode'];
+    protected $appends = ['newEpisode','countWishlist'];
+    public function getCountWishlistAttribute()
+    {
+        // Sử dụng collection để đếm thay vì query lại từ DB
+        return $this->wishlists->count();
+    }
     public function incrementViews()
     {
         $this->increment('views'); // Tăng giá trị của trường views
+    }
+    public function wishlists()
+    {
+        return $this->hasMany(Wishlist::class, 'product_id');
     }
     public function getNewEpisodeAttribute()
     {
