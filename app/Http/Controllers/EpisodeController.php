@@ -29,7 +29,7 @@ class EpisodeController extends Controller
 
             $episode = Episode::where('id_product', $id_product)->where('slug', $slug)->first();
             if ($episode) {
-                $episode->update(['name' => $episodeName]);
+                $episode->update(['name' => $episodeName,'updated_at' => now()]);
                 Server::where('id_episode', $episode->id)->delete();
             } else {
                 $episode = Episode::create([
