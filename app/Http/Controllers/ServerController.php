@@ -8,14 +8,14 @@ use App\Models\Server;
 
 class ServerController extends Controller
 {
-    function create($id_product,$id_episode, Request $rq)
+    function create($product_id,$episode_id, Request $rq)
     {
-        if (!$id_episode) {
+        if (!$episode_id) {
             return response()->json(['error' => 'Có lỗi xảy ra, vui lòng load lại trang']);
         }
 
         try {
-            Server::create(['images' => $rq->images, 'id_episode' => $id_episode]);
+            Server::create(['images' => $rq->images, 'episode_id' => $episode_id]);
             return response()->json(['success' => 'Thêm server  thành công']);
         } catch (\Throwable $th) {
             return response()->json(['error' => $th->getMessage()]);

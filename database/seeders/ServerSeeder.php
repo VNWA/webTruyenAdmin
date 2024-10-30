@@ -14,7 +14,7 @@ class ServerSeeder extends Seeder
     public function run(): void
     {
         foreach (\App\Models\Episode::all() as $episode) {
-            Server::factory()->count(3)->create(['id_episode' => $episode->id]);
+            Server::factory()->count(3)->create(['episode_id' => $episode->id]);
         }
     }
 }

@@ -14,7 +14,7 @@ use ZipArchive;
 
 class EpisodeController extends Controller
 {
-    public function importMultipleZip(Request $request, $id_product)
+    public function importMultipleZip(Request $request, $product_id)
     {
 
         // Kiểm tra nếu không có file gửi lên
@@ -27,20 +27,20 @@ class EpisodeController extends Controller
             $episodeName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
             $slug = Str::slug($episodeName);
 
-            $episode = Episode::where('id_product', $id_product)->where('slug', $slug)->first();
+            $episode = Episode::where('product_id', $product_id)->where('slug', $slug)->first();
             if ($episode) {
                 $episode->touch();
-                Server::where('id_episode', $episode->id)->delete();
+                Server::where('episode_id', $episode->id)->delete();
             } else {
                 $episode = Episode::create([
-                    'id_product' => $id_product,
+                    'product_id' => $product_id,
                     'name' => $episodeName,
                     'slug' => $slug
                 ]);
 
             }
 
-            $product = Product::find($id_product);
+            $product = Product::find($product_id);
             $product->touch();
 
             $episode->save();
@@ -70,7 +70,7 @@ class EpisodeController extends Controller
 
                 // Lưu thông tin vào bảng servers
                 Server::create([
-                    'id_episode' => $episode->id,
+                    'episode_id' => $episode->id,
                     'images' => $imagePaths,
                 ]);
             } else {
@@ -90,23 +90,23 @@ class EpisodeController extends Controller
         $string = strtolower($string);
         return $string;
     }
-    public function index($id_product)
+    public function index($product_id)
     {
-        $product = Product::find($id_product);
+        $product = Product::find($product_id);
         return Inertia::render('Product/Episode', ['product' => $product]);
 
     }
-    public function loadDataTable(Request $request, $id_product)
+    public function loadDataTable(Request $request, $product_id)
     {
         $perPage = $request->get('per_page', 10);
         $page = $request->get('page', 1);
         $sortBy = $request->get('sortBy', 'created_at');
-        $sortType = $request->get('sortType', 'DESC');
+        $sortType = $request->get('sortType', 'ASC');
         $name = $request->get('name');
 
         // Khởi tạo query
         $query = Episode::query();
-        $query->where('id_product', $id_product);
+        $query->where('product_id', $product_id);
         $query->with('servers');
         // Lọc theo tên product nếu có
         if ($name) {
@@ -118,7 +118,7 @@ class EpisodeController extends Controller
 
         // Sắp xếp và phân trang
         $total = $query->count();
-        $episodes = $query->skip(($page - 1) * $perPage)->take($perPage)->latest()->get();
+        $episodes = $query->skip(($page - 1) * $perPage)->take($perPage)->orderBy('id')->get();
 
 
         return response()->json([
@@ -133,36 +133,36 @@ class EpisodeController extends Controller
 
 
     }
-    function create($id_product, Request $rq)
+    function create($product_id, Request $rq)
     {
         if ($rq->name) {
             $slug = $this->makeSlug($rq->name);
-            if (Episode::where('slug', $slug)->where('id_product', $id_product)->first()) {
+            if (Episode::where('slug', $slug)->where('product_id', $product_id)->first()) {
                 return response()->json(['error' => 'Đã có tên này']);
             } else {
-                Episode::create(['id_product' => $id_product, 'name' => $rq->name, 'slug' => $slug]);
+                Episode::create(['product_id' => $product_id, 'name' => $rq->name, 'slug' => $slug]);
                 return response()->json(['success' => 'Thêm ' . $rq->name . '  thành công']);
             }
         } else {
             return response()->json(['error' => 'Nhập tên']);
         }
     }
-    function update($id_product, $id, Request $rq)
+    function update($product_id, $id, Request $rq)
     {
         if ($rq->name) {
             $slug = $this->makeSlug($rq->name);
             if (
                 Episode::whereNotIn('id', [$id])
-                    ->where('id_product', $id_product)
+                    ->where('product_id', $product_id)
                     ->where('slug', $slug)
                     ->first()
             ) {
                 return response()->json(['error' => 'Đã có tên này']);
             } else {
                 Episode::where('id', $id)
-                    ->where('id_product', $id_product)
+                    ->where('product_id', $product_id)
                     ->update(['name' => $rq->name, 'slug' => $slug]);
-                Product::where('id', $id_product)->update(['updated_at' => now()]);
+                Product::where('id', $product_id)->update(['updated_at' => now()]);
                 return response()->json(['success' => 'Sửa  tên tập thành công thành công']);
             }
         } else {

@@ -54,14 +54,21 @@
                     <div class="col-span-3 p-2">
                         <div class="bg-white  shadow-xl sm:rounded-lg p-3 mb-3 p">
 
-
+                            <div class="mb-3">
+                                <label for="name" class="block mb-2 font-bold text-base text-gray-900 dark:text-dark">Chọn danh muc</label>
+                                <select v-model="category_id" class="bg-gray-50 border text-base border-gray-300 text-gray-900  rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 dark:bg-white-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-dark dark:focus:ring-purple-500 dark:focus:border-purple-500">
+                                    <option value="">Chọn danh muc</option>
+                                    <option v-for="item in dataCategory" :value="item.id">{{ item.name }}</option>
+                                </select>
+                                <span class="text-red-600 text-xs" ref="scroll_category_id">{{ error.category_id }}</span>
+                            </div>
                             <div class="mb-3">
                                 <label for="name" class="block mb-2 font-bold text-base text-gray-900 dark:text-dark">Chọn quốc gia</label>
-                                <select v-model="id_nation" class="bg-gray-50 border text-base border-gray-300 text-gray-900  rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 dark:bg-white-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-dark dark:focus:ring-purple-500 dark:focus:border-purple-500">
+                                <select v-model="nation_id" class="bg-gray-50 border text-base border-gray-300 text-gray-900  rounded-lg focus:ring-purple-500 focus:border-purple-500 block w-full p-2.5 dark:bg-white-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-dark dark:focus:ring-purple-500 dark:focus:border-purple-500">
                                     <option value="">Chọn quốc gia</option>
                                     <option v-for="item in dataNation" :value="item.id">{{ item.name }}</option>
                                 </select>
-                                <span class="text-red-600 text-xs" ref="scroll_id_nation">{{ error.id_nation }}</span>
+                                <span class="text-red-600 text-xs" ref="scroll_nation_id">{{ error.nation_id }}</span>
                             </div>
 
                             <div class="mb-3">
@@ -174,8 +181,8 @@ export default {
         return {
 
             error: {
-                id_year: '',
-                id_nation: '',
+                category_id: '',
+                nation_id: '',
                 full_name: '',
                 date: '',
                 name: '',
@@ -204,8 +211,8 @@ export default {
 
         clearErrors() {
 
-            this.error.id_year = "";
-            this.error.id_nation = "";
+            this.error.category_id = "";
+            this.error.nation_id = "";
             this.error.full_name = "";
             this.error.date = "";
             this.error.name = "";
@@ -244,8 +251,8 @@ export default {
         },
         submitForm() {
             this.clearErrors();
-            const id_year = this.id_year;
-            const id_nation = this.id_nation;
+            const category_id = this.category_id;
+            const nation_id = this.nation_id;
             const types = this.$refs.types.dataSelectedOptions;
 
             const url_avatar = this.$refs.url_avatar.url_image;
@@ -265,8 +272,8 @@ export default {
 
 
             axios.post('', {
-                id_year: id_year,
-                id_nation: id_nation,
+                category_id: category_id,
+                nation_id: nation_id,
                 types: types,
                 url_avatar: url_avatar,
                 url_bg: url_bg,
@@ -303,13 +310,13 @@ export default {
     },
 
     setup() {
-        const dataYear = ref([]);
+        const dataCategory = ref([]);
         const dataNation = ref([]);
         const dataType = ref([]);
         const dataTypeSelected = ref([]);
 
         const data = usePage();
-        dataYear.value = data.props.listYear;
+        dataCategory.value = data.props.listCategory;
         dataNation.value = data.props.listNation;
         dataType.value = data.props.listType;
         dataTypeSelected.value = data.props.dataTypeSelected;
@@ -317,8 +324,8 @@ export default {
 
 
 
-        const id_year = ref(data.props.data.id_year);
-        const id_nation = ref(data.props.data.id_nation);
+        const category_id = ref(data.props.data.category_id);
+        const nation_id = ref(data.props.data.nation_id);
         const data_url_avatar = ref(data.props.data.url_avatar);
         const data_url_bg = ref(data.props.data.url_bg);
         const name = ref(data.props.data.name);
@@ -334,11 +341,11 @@ export default {
 
         return {
             dataTypeSelected,
-            dataYear,
+            dataCategory,
             dataNation,
             dataType,
-            id_year,
-            id_nation,
+            category_id,
+            nation_id,
             data_url_avatar,
             data_url_bg,
             name,

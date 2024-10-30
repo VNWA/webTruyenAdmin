@@ -15,7 +15,6 @@ class UserSeeder extends Seeder
     public function run(): void
     {
         // \App\Models\User::factory(10)->create();
-        User::truncate();
 
         User::create([
             'name' => 'DEV',
@@ -23,8 +22,8 @@ class UserSeeder extends Seeder
             'password' => Hash::make('dev@123'),
         ]);
         User::create([
-            'name' => 'ADMin',
-            'email' => 'admin@gmail.com',
+            'name' => 'Admin',
+            'email' => 'admin@vinawebapp.com',
             'password' => Hash::make('admin@123'),
         ]);
     }

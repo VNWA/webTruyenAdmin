@@ -16,11 +16,10 @@ return new class extends Migration {
             $table->integer('ord')->default(0);
             $table->string('name');
             $table->string('slug');
-            $table->text('meta_image');
-            $table->string('meta_title');
-            $table->text('meta_desc');
+            $table->text('meta_image')->nullable();
+            $table->string('meta_title')->nullable();
+            $table->text('meta_desc')->nullable();
             $table->timestamps();
-            $table->softDeletes();
         });
     }
 

@@ -46,7 +46,7 @@ class ClientController extends Controller
         // Lấy dữ liệu từ Episode với hạn chế N+1
         $episodes = Episode::with('product:id,slug')
             ->latest('updated_at')
-            ->get(['slug', 'id_product', 'updated_at'])
+            ->get(['slug', 'product_id', 'updated_at'])
             ->map(function ($item) {
                 return [
                     'slug' => '/manga/' . $item->product->slug . '/' . $item->slug,
@@ -177,15 +177,15 @@ class ClientController extends Controller
 
     function ratingProduct(Request $request)
     {
-        if ($request->client_ip && $request->rating && $request->id_product) {
+        if ($request->client_ip && $request->rating && $request->product_id) {
             $client_ip = str_replace(' ', '', $request->client_ip);
             $client_ip = str_replace('"', '', $client_ip);
             $client_ip = str_replace("'", '', $client_ip);
 
-            $Rating = Rating::updateOrCreate(['id_product' => $request->id_product, 'client_ip' => $client_ip], ['rating' => $request->rating]);
+            $Rating = Rating::updateOrCreate(['product_id' => $request->product_id, 'client_ip' => $client_ip], ['rating' => $request->rating]);
 
-            $totalRatings = Rating::where('id_product', $request->id_product)->count();
-            $totalRatingPoints = Rating::where('id_product', $request->id_product)->sum('rating');
+            $totalRatings = Rating::where('product_id', $request->product_id)->count();
+            $totalRatingPoints = Rating::where('product_id', $request->product_id)->sum('rating');
             $averageRating = $totalRatingPoints / $totalRatings;
             $clientRating = $request->rating;
             return response()->json(['totalRatings' => $totalRatings, 'averageRating' => $averageRating, 'clientRating' => $clientRating], 200);
@@ -202,13 +202,13 @@ class ClientController extends Controller
         $product = Product::where('slug', $slug)->firstOrFail();
 
         // Lấy episode hiện tại với thông tin servers
-        $episode = Episode::where('id_product', $product->id)
+        $episode = Episode::where('product_id', $product->id)
             ->where('slug', $episode_slug)
             ->with('servers')
             ->firstOrFail();
 
         // Lấy tất cả episodes của product (sắp xếp theo thứ tự ID)
-        $episodes = Episode::where('id_product', $product->id)
+        $episodes = Episode::where('product_id', $product->id)
             ->orderBy('id', 'asc')
             ->get(['id', 'name', 'slug']);
 
@@ -284,9 +284,9 @@ class ClientController extends Controller
             ->select(['id', 'name', 'slug'])
             ->first();
         $listIdProduct = [];
-        $ProType = ProType::where('id_type', $type->id)->get(['id_product']);
+        $ProType = ProType::where('type_id', $type->id)->get(['product_id']);
         foreach ($ProType as $key => $value) {
-            $listIdProduct[$key] = $value->id_product;
+            $listIdProduct[$key] = $value->product_id;
         }
 
         $products = Product::whereIn('id', $listIdProduct)->where('status', 1)->latest('updated_at')->paginate(20)->setPath('');
@@ -313,7 +313,7 @@ class ClientController extends Controller
             ->select(['id', 'name', 'slug'])
             ->first();
 
-        $products = Product::where('id_nation', $nation->id)
+        $products = Product::where('nation_id', $nation->id)
             ->where('status', 1)
             ->latest('updated_at')
             ->paginate(20)
@@ -341,14 +341,14 @@ class ClientController extends Controller
             ->select(['id', 'name', 'slug'])
             ->first();
 
-        $dataProduct = Product::where('id_year', $year->id)
+        $dataProduct = Product::where('year_id', $year->id)
             ->where('status', 1)
             ->latest('updated_at')
             ->paginate(20)
             ->setPath('');
 
         $listTopProduct = Product::where('status', 1)
-            ->where('id_year', $year->id)
+            ->where('year_id', $year->id)
             ->with('ratings')
             ->get()
             ->sortByDesc(function ($product) {

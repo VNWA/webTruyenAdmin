@@ -8,9 +8,9 @@ use Illuminate\Database\Eloquent\Model;
 class ProductBanner extends Model
 {
     use HasFactory;
-    protected $fillable = ['status', 'ord', 'id_product'];
+    protected $fillable = ['status', 'ord', 'product_id'];
     public function product()
     {
-        return $this->belongsTo(Product::class, 'id_product');
+        return $this->belongsTo(Product::class, 'product_id');
     }
 }

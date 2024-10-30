@@ -9,7 +9,7 @@ class Episode extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['id_product', 'name', 'slug'];
+    protected $fillable = ['product_id', 'name', 'slug'];
 
     protected $appends = ['update_time'];
 
@@ -64,11 +64,11 @@ class Episode extends Model
 
     public function product()
     {
-        return $this->belongsTo(Product::class, 'id_product');
+        return $this->belongsTo(Product::class, 'product_id');
     }
 
     public function servers()
     {
-        return $this->hasMany(Server::class, 'id_episode');
+        return $this->hasMany(Server::class, 'episode_id');
     }
 }

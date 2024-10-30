@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Company;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -13,6 +14,8 @@ class CompanySeeder extends Seeder
      */
     public function run(): void
     {
+        Company::truncate();
+
         DB::table('companies')->insert([
             'url_avatar_full' => 'http://vnwa.vinawebapp.demo//uploads/images/Company/vnwaLogoFull.png',
             'url_avatar_icon' => 'http://vnwa.vinawebapp.demo//uploads/images/Company/vnwaLogoIcon.png',

@@ -40,7 +40,7 @@ class ProductBannerController extends Controller
     {
         foreach ($request->dataProduct as $value) {
             ProductBanner::create([
-                'id_product' => $value['id'],
+                'product_id' => $value['id'],
             ]);
         }
         return true;

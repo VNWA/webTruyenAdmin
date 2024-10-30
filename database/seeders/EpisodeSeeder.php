@@ -15,7 +15,7 @@ class EpisodeSeeder extends Seeder
     public function run(): void
     {
         foreach (Product::all() as $product) {
-            Episode::factory()->count(5)->create(['id_product' => $product->id]);
+            Episode::factory()->count(5)->create(['product_id' => $product->id]);
         }
     }
 }

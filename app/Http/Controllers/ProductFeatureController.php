@@ -91,20 +91,20 @@ class ProductFeatureController extends Controller
         } else {
             $data['desc'] = $rq->desc;
         }
-        if (!$rq->id_nation) {
-            return response()->json(['error' => 'Vui lòng chọn quốc gia', 'column' => 'id_nation']);
+        if (!$rq->nation_id) {
+            return response()->json(['error' => 'Vui lòng chọn quốc gia', 'column' => 'nation_id']);
         } else {
-            $data['id_nation'] = $rq->id_nation;
+            $data['nation_id'] = $rq->nation_id;
         }
         if (!$rq->date) {
             return response()->json(['error' => 'Vui lòng chọn ngày, tháng phát hành', 'column' => 'date']);
         } else {
             $data['date'] = $rq->date;
         }
-        if (!$rq->id_year) {
-            return response()->json(['error' => 'Vui lòng chọn năm phát hành', 'column' => 'id_year']);
+        if (!$rq->year_id) {
+            return response()->json(['error' => 'Vui lòng chọn năm phát hành', 'column' => 'year_id']);
         } else {
-            $data['id_year'] = $rq->id_year;
+            $data['year_id'] = $rq->year_id;
         }
         if (!$rq->types) {
             return response()->json(['error' => 'Vui lòng chọn thể loại', 'column' => 'types']);
@@ -144,8 +144,8 @@ class ProductFeatureController extends Controller
         $id_tb = Product::create($data)->id;
         foreach ($rq->types as $type_id) {
             ProType::create([
-                'id_type' => $type_id,
-                'id_product' => $id_tb,
+                'type_id' => $type_id,
+                'product_id' => $id_tb,
             ]);
         }
         return response()->json(['success' => 'Cập nhập dữ liệu thành công']);
@@ -203,20 +203,20 @@ class ProductFeatureController extends Controller
         } else {
             $data['desc'] = $rq->desc;
         }
-        if (!$rq->id_nation) {
-            return response()->json(['error' => 'Vui lòng chọn quốc gia', 'column' => 'id_nation']);
+        if (!$rq->nation_id) {
+            return response()->json(['error' => 'Vui lòng chọn quốc gia', 'column' => 'nation_id']);
         } else {
-            $data['id_nation'] = $rq->id_nation;
+            $data['nation_id'] = $rq->nation_id;
         }
         if (!$rq->date) {
             return response()->json(['error' => 'Vui lòng chọn ngày, tháng phát hành', 'column' => 'date']);
         } else {
             $data['date'] = $rq->date;
         }
-        if (!$rq->id_year) {
-            return response()->json(['error' => 'Vui lòng chọn năm phát hành', 'column' => 'id_year']);
+        if (!$rq->year_id) {
+            return response()->json(['error' => 'Vui lòng chọn năm phát hành', 'column' => 'year_id']);
         } else {
-            $data['id_year'] = $rq->id_year;
+            $data['year_id'] = $rq->year_id;
         }
         if (!$rq->types) {
             return response()->json(['error' => 'Vui lòng chọn thể loại', 'column' => 'types']);
@@ -252,11 +252,11 @@ class ProductFeatureController extends Controller
         }
 
         Product::where('id', $id)->update($data);
-        ProType::where('id_product', $id)->delete();
+        ProType::where('product_id', $id)->delete();
         foreach ($rq->types as $type_id) {
             ProType::create([
-                'id_type' => $type_id,
-                'id_product' => $id,
+                'type_id' => $type_id,
+                'product_id' => $id,
             ]);
         }
         return response()->json(['success' => 'Cập nhập dữ liệu thành công']);

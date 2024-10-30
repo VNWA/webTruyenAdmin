@@ -12,7 +12,7 @@ class ServerFactory extends Factory
     public function definition()
     {
         return [
-            'id_episode' => \App\Models\Episode::factory(),
+            'episode_id' => \App\Models\Episode::factory(),
             'images' => [$this->faker->imageUrl(), $this->faker->imageUrl(), $this->faker->imageUrl()]
         ];
     }

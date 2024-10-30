@@ -12,7 +12,7 @@ class EpisodeFactory extends Factory
     public function definition()
     {
         return [
-            'id_product' => \App\Models\Product::factory(),
+            'product_id' => \App\Models\Product::factory(),
             'name' => $this->faker->word(),
             'slug' => $this->faker->slug(),
         ];

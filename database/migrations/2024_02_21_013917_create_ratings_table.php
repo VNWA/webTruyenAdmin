@@ -12,7 +12,7 @@ return new class extends Migration {
     {
         Schema::create('ratings', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_product')->constrained('products')->onDelete('cascade');
+            $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
             $table->text('client_ip');
             $table->integer('rating');
             $table->timestamps();

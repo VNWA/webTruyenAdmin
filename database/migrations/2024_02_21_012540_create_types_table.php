@@ -21,7 +21,6 @@ return new class extends Migration {
             $table->string('meta_title');
             $table->text('meta_desc');
             $table->timestamps();
-            $table->softDeletes();
         });
     }
 

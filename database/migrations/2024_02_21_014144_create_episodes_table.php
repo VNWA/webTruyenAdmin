@@ -12,11 +12,11 @@ return new class extends Migration {
     {
         Schema::create('episodes', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_product')->constrained('products')->onDelete('cascade');
+            $table->foreignId('product_id')->constrained('products')->onDelete('cascade');
             $table->string('name');
             $table->string('slug');
             $table->timestamps();
-            $table->unique(['id_product', 'slug']);
+            $table->unique(['product_id', 'slug']);
 
         });
     }

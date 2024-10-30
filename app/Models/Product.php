@@ -4,14 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Facades\DB;
 
 class Product extends Model
 {
     use HasFactory;
-    use SoftDeletes;
-    protected $fillable = ['is_18', 'id_year', 'views', 'id_nation', 'status', 'highlight', 'rating_qnt', 'url_avatar', 'url_bg', 'date', 'full_name', 'name', 'slug', 'desc', 'meta_image', 'meta_title', 'meta_desc'];
+    protected $fillable = ['category_id','nation_id', 'is_end', 'views', 'nation_id', 'status', 'highlight', 'rating_qnt', 'url_avatar', 'url_bg', 'date', 'full_name', 'name', 'slug', 'desc', 'meta_image', 'meta_title', 'meta_desc'];
     protected $appends = ['newEpisode','countWishlist'];
     public function getCountWishlistAttribute()
     {
@@ -45,7 +43,7 @@ class Product extends Model
 
     public function latestEpisodes()
     {
-        return $this->hasMany(Episode::class, 'id_product')->latest('id')->take(2);
+        return $this->hasMany(Episode::class, 'product_id')->latest('id')->take(2);
     }
     public function category()
     {
@@ -53,23 +51,23 @@ class Product extends Model
     }
     public function nation()
     {
-        return $this->belongsTo(Nation::class, 'id_nation');
+        return $this->belongsTo(Nation::class, 'nation_id');
     }
     public function year()
     {
-        return $this->belongsTo(Year::class, 'id_year');
+        return $this->belongsTo(Year::class, 'year_id');
     }
     public function types()
     {
-        return $this->belongsToMany(Type::class, 'pro_types', 'id_product', 'id_type');
+        return $this->belongsToMany(Type::class, 'pro_types', 'product_id', 'type_id');
     }
     public function episodes()
     {
-        return $this->hasMany(Episode::class, 'id_product')->latest('id');
+        return $this->hasMany(Episode::class, 'product_id')->latest('id');
 
     }
     public function product_banner()
     {
-        return $this->hasOne(ProductBanner::class, 'id_product');
+        return $this->hasOne(ProductBanner::class, 'product_id');
     }
 }

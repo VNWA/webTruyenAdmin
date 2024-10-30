@@ -57,14 +57,14 @@ class ProductController extends Controller
 
             // Kiểm tra xem episode đã tồn tại chưa
             $episode = Episode::firstOrCreate(
-                ['slug' => $episodeSlug, 'id_product' => $product->id],
+                ['slug' => $episodeSlug, 'product_id' => $product->id],
                 ['name' => $episodeName]
             );
 
             // Nếu chưa có server thì thêm vào
-            if (!Server::where('id_episode', $episode->id)->exists()) {
+            if (!Server::where('episode_id', $episode->id)->exists()) {
                 Server::create([
-                    'id_episode' => $episode->id,
+                    'episode_id' => $episode->id,
                     'images' => $chapter['images'],
                 ]);
             }
@@ -102,10 +102,10 @@ class ProductController extends Controller
     //     foreach ($chapters as $chapter) {
     //         $episodeName = $chapter['title'];
     //         $episodeSlug = Str::slug($episodeName);
-    //         $episode = Episode::where('slug', $episodeSlug)->where('id_product', $product->id)->first();
+    //         $episode = Episode::where('slug', $episodeSlug)->where('product_id', $product->id)->first();
 
     //         if ($episode) {
-    //             if (!Server::where('id_episode', $episode->id)->exists()) {
+    //             if (!Server::where('episode_id', $episode->id)->exists()) {
     //                 $serverImages = $chapter['images'];
     //                 $newIamges = [];
     //                 foreach ($serverImages as $imageUrl) {
@@ -118,13 +118,13 @@ class ProductController extends Controller
 
     //                     // Lưu đường dẫn ảnh vào mảng hoặc cơ sở dữ liệu theo yêu cầu
     //                 }
-    //                 Server::create(['id_episode' => $episode->id, 'images' => $newIamges]);
+    //                 Server::create(['episode_id' => $episode->id, 'images' => $newIamges]);
 
     //             }
     //         } else {
 
     //             $episode = Episode::create([
-    //                 'id_product' => $product->id,
+    //                 'product_id' => $product->id,
     //                 'name' => $episodeName,
     //                 'slug' => $episodeSlug
     //             ]);
@@ -140,7 +140,7 @@ class ProductController extends Controller
     //                 $imageFullUrl = Storage::url($imageStoragePath);
     //                 $newIamges[] = $imageFullUrl;
     //             }
-    //             Server::create(['id_episode' => $episode->id, 'images' => $newIamges]);
+    //             Server::create(['episode_id' => $episode->id, 'images' => $newIamges]);
     //         }
     //     }
 
@@ -205,7 +205,7 @@ class ProductController extends Controller
 
     function showCreate()
     {
-        $listYear = Year::where('status', 1)->get(['id', 'name', 'slug']);
+        $listCategory = Category::where('status', 1)->get(['id', 'name', 'slug']);
         $listNation = Nation::where('status', 1)->get(['id', 'name', 'slug']);
 
         $listType = Type::where('status', 1)->get(['id', 'name']);
@@ -215,7 +215,7 @@ class ProductController extends Controller
             $dataType[$key]['value'] = $value->id;
         }
 
-        return Inertia::render('Product/Create', ['listYear' => $listYear, 'listNation' => $listNation, 'listType' => $dataType]);
+        return Inertia::render('Product/Create', ['listCategory' => $listCategory, 'listNation' => $listNation, 'listType' => $dataType]);
     }
     function create(Request $rq)
     {
@@ -230,6 +230,11 @@ class ProductController extends Controller
         } else {
             $data['name'] = $rq->name;
         }
+        if (!$rq->category_id) {
+            return response()->json(['error' => 'Vui lòng nhập danh mục', 'column' => 'category_id']);
+        } else {
+            $data['category_id'] = $rq->category_id;
+        }
         if (!$rq->slug) {
             return response()->json(['error' => 'Có lỗi xảy ra, không cập nhập được slug, hãy load lại trang', 'column' => 'slug']);
         } else {
@@ -243,16 +248,12 @@ class ProductController extends Controller
         } else {
             $data['desc'] = $rq->desc;
         }
-        if (!$rq->id_nation) {
-            return response()->json(['error' => 'Vui lòng chọn quốc gia', 'column' => 'id_nation']);
+        if (!$rq->nation_id) {
+            return response()->json(['error' => 'Vui lòng chọn quốc gia', 'column' => 'nation_id']);
         } else {
-            $data['id_nation'] = $rq->id_nation;
+            $data['nation_id'] = $rq->nation_id;
         }
-        if (!$rq->date) {
-            return response()->json(['error' => 'Vui lòng chọn ngày, tháng phát hành', 'column' => 'date']);
-        } else {
-            $data['date'] = $rq->date;
-        }
+
 
         if (!$rq->types) {
             return response()->json(['error' => 'Vui lòng chọn thể loại', 'column' => 'types']);
@@ -265,11 +266,7 @@ class ProductController extends Controller
         } else {
             $data['url_avatar'] = $rq->url_avatar;
         }
-        if (!$rq->url_bg) {
-            return response()->json(['error' => 'Vui lòng chọn ảnh nền', 'column' => 'url_bg']);
-        } else {
-            $data['url_bg'] = $rq->url_bg;
-        }
+
 
         if (!$rq->meta_title) {
             return response()->json(['error' => 'Vui lòng nhập tiêu đề link để tối ưu SEO', 'column' => 'meta_title']);
@@ -292,8 +289,8 @@ class ProductController extends Controller
         $id_tb = Product::create($data)->id;
         foreach ($rq->types as $type_id) {
             ProType::create([
-                'id_type' => $type_id,
-                'id_product' => $id_tb,
+                'type_id' => $type_id,
+                'product_id' => $id_tb,
             ]);
         }
         return response()->json(['success' => 'Cập nhập dữ liệu thành công']);
@@ -303,7 +300,7 @@ class ProductController extends Controller
     {
         $data = Product::with('types')->with('nation')->find($id);
 
-        $listYear = Year::where('status', 1)->get(['id', 'name', 'slug']);
+        $listCategory = Category::where('status', 1)->get(['id', 'name', 'slug']);
         $listNation = Nation::where('status', 1)->get(['id', 'name', 'slug']);
 
         $listType = Type::where('status', 1)->get(['id', 'name']);
@@ -322,7 +319,7 @@ class ProductController extends Controller
             }
         }
 
-        return Inertia::render('Product/Edit', ['data' => $data, 'listYear' => $listYear, 'listNation' => $listNation, 'listType' => $dataType, 'dataTypeSelected' => $dataTypeSelected]);
+        return Inertia::render('Product/Edit', ['data' => $data, 'listCategory' => $listCategory, 'listNation' => $listNation, 'listType' => $dataType, 'dataTypeSelected' => $dataTypeSelected]);
     }
     function update(Request $request, $id)
     {
@@ -337,21 +334,21 @@ class ProductController extends Controller
 
             // Cập nhật các trường với dữ liệu từ request
             $product->url_avatar = $request->url_avatar;
+            $product->category_id = $request->category_id;
             $product->url_bg = $request->url_bg;
             $product->full_name = $request->full_name;
-            $product->id_nation = $request->id_nation;
-            $product->date = $request->date;
+            $product->nation_id = $request->nation_id;
             $product->name = $request->name;
             $product->slug = $request->slug;
             $product->desc = $request->desc;
             $product->meta_image = $request->meta_image;
             $product->meta_title = $request->meta_title;
             $product->meta_desc = $request->meta_desc;
-            ProType::where('id_product', $id)->delete();
+            ProType::where('product_id', $id)->delete();
             foreach ($request->types as $type_id) {
                 ProType::create([
-                    'id_type' => $type_id,
-                    'id_product' => $id,
+                    'type_id' => $type_id,
+                    'product_id' => $id,
                 ]);
             }
             // Lưu thay đổi vào cơ sở dữ liệu

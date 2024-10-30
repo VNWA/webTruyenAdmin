@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class Server extends Model
 {
     use HasFactory;
-    protected $fillable = ['id_episode', 'images'];
+    protected $fillable = ['episode_id', 'images'];
     protected $casts = [
         'images' => 'array',
     ];
@@ -16,6 +16,6 @@ class Server extends Model
     // Quan hệ: Mỗi Server thuộc về một Episode
     public function episode()
     {
-        return $this->belongsTo(Episode::class, 'id_episode');
+        return $this->belongsTo(Episode::class, 'episode_id');
     }
 }

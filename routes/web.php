@@ -126,7 +126,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
         Route::get('/edit/{id}', [ProductController::class, 'showEdit'])->name('Product.edit');
         Route::post('/edit/{id}', [ProductController::class, 'update']);
 
-        Route::prefix('episode/{id_product}')->group(function () {
+        Route::prefix('episode/{product_id}')->group(function () {
 
             Route::get('/', [EpisodeController::class, 'index'])->name('Product.Episode');
             Route::get('/load-data-table', [EpisodeController::class, 'loadDataTable']);
@@ -135,7 +135,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified']
 
             Route::post('/create', [EpisodeController::class, 'create']);
             Route::post('/update/{id}', [EpisodeController::class, 'update'])->name('Episode.Update');
-            Route::prefix('server/{id_episode}')->group(function () {
+            Route::prefix('server/{episode_id}')->group(function () {
                 Route::post('/create', [ServerController::class, 'create']);
                 Route::post('/update/{id}', [ServerController::class, 'update']);
             });

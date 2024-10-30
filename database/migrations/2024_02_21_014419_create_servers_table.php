@@ -12,7 +12,7 @@ return new class extends Migration {
     {
         Schema::create('servers', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('id_episode')->constrained('episodes')->onDelete('cascade');
+            $table->foreignId('episode_id')->constrained('episodes')->onDelete('cascade');
             $table->json('images');
             $table->timestamps();
         });
