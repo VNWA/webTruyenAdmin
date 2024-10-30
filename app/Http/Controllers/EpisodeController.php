@@ -27,17 +27,19 @@ class EpisodeController extends Controller
             $episodeName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
             $slug = Str::slug($episodeName);
 
-            // Tạo hoặc cập nhật episode vào database với id_product
-            $episode = Episode::updateOrCreate(
-                [
+            $episode = Episode::where('id_product', $id_product)->where('slug', $slug)->first();
+            if ($episode) {
+                $episode->update(['name' => $episodeName]);
+                Server::where('id_episode', $episode->id)->delete();
+            } else {
+                $episode = Episode::create([
                     'id_product' => $id_product,
-                    'slug' => $slug, // Điều kiện tìm kiếm
-                ],
-                [
                     'name' => $episodeName,
-                    'updated_at' => now(),
-                ]
-            );
+                    'slug' => $slug
+                ]);
+
+            }
+
             $product = Product::find($id_product);
             $product->update(['updated_at' => now()]);
 
