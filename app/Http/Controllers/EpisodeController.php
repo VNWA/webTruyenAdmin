@@ -116,7 +116,7 @@ class EpisodeController extends Controller
 
         // Sắp xếp và phân trang
         $total = $query->count();
-        $episodes = $query->skip(($page - 1) * $perPage)->take($perPage)->orderBy($sortBy, $sortType)->get();
+        $episodes = $query->skip(($page - 1) * $perPage)->take($perPage)->latest()->get();
 
 
         return response()->json([
