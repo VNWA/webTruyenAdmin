@@ -38,16 +38,8 @@ Route::get('/', function () {
         'phpVersion' => PHP_VERSION,
     ]);
 });
-Route::prefix('vnwa-asdghuajsdg-import-crawl')->group(function () {
-    Route::prefix('manga18fx')->group(function () {
-        Route::post('/import-crawl-18', [ProductController::class, 'importManga18fxCrawl']);
-    });
-    Route::post('/import-crawl-18-products', [ProductController::class, 'import18ProductCrawl']);
 
-
-
-});
-Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified'])->group(function () {
+Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified','check.payment.expiry'])->group(function () {
     Route::post('/ckediter-uploads-file', [FileController::class, 'ckediterUploadsImage']);
     Route::post('/change-status', [VinawebappController::class, 'changeStatus']);
     Route::post('/change-highlight', [VinawebappController::class, 'changeHighlight']);

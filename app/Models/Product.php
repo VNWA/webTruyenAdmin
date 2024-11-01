@@ -43,7 +43,7 @@ class Product extends Model
 
     public function latestEpisodes()
     {
-        return $this->hasMany(Episode::class, 'product_id')->latest('id')->take(2);
+        return $this->hasMany(Episode::class, 'product_id')->orderByDesc('id')->take(2);
     }
     public function category()
     {
@@ -63,7 +63,7 @@ class Product extends Model
     }
     public function episodes()
     {
-        return $this->hasMany(Episode::class, 'product_id')->latest('id');
+        return $this->hasMany(Episode::class, 'product_id')->orderByDesc('id');
 
     }
     public function product_banner()

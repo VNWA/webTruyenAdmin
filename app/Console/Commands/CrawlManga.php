@@ -43,7 +43,7 @@ class CrawlManga extends Command
             $this->info('Fetching products from ' . $url); // Thông báo đang lấy sản phẩm
 
             $crawler->filter('.page-item')->each(function (Crawler $node, $i) {
-                if ($i >= 3) { // Nếu đã lấy 3 sản phẩm thì dừng vòng lặp
+                if ($i >= 6) { // Nếu đã lấy 3 sản phẩm thì dừng vòng lặp
                     return; // Dừng lại nếu đã đạt đủ số lượng
                 }
                     $link = $node->filter('a')->attr('href');
@@ -55,6 +55,7 @@ class CrawlManga extends Command
                     $product = Product::firstOrCreate(
                         ['slug' => $slug], // Điều kiện tìm kiếm
                         [ // Dữ liệu để tạo mới
+                            'category_id' => 1,
                             'url_avatar' => $image,
                             'name' => $title,
                         ]
@@ -94,12 +95,12 @@ class CrawlManga extends Command
             });
 
             // Sắp xếp các chương từ mới nhất đến cũ nhất
-            usort($chapters, function ($a, $b) {
-                return $b['number'] <=> $a['number']; // Sắp xếp theo số chương giảm dần
-            });
-
+            // usort($chapters, function ($a, $b) {
+            //     return $b['number'] <=> $a['number']; // Sắp xếp theo số chương giảm dần
+            // });
+$reversedArray = array_reverse($chapters);
             // Lưu vào cơ sở dữ liệu
-            foreach ($chapters as $chapter) {
+            foreach ($reversedArray as $chapter) {
                 $episode = Episode::firstOrCreate(
                     [
                         'product_id' => $product_id,

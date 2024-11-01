@@ -100,25 +100,25 @@ class EpisodeController extends Controller
     {
         $perPage = $request->get('per_page', 10);
         $page = $request->get('page', 1);
-        $sortBy = $request->get('sortBy', 'created_at');
-        $sortType = $request->get('sortType', 'ASC');
         $name = $request->get('name');
 
         // Khởi tạo query
         $query = Episode::query();
         $query->where('product_id', $product_id);
         $query->with('servers');
+
+
         // Lọc theo tên product nếu có
         if ($name) {
             $query->where('name', 'like', "%$name%");
         }
-
+$query->orderByDesc('id');
         // Lọc theo danh mục nếu có
 
 
         // Sắp xếp và phân trang
         $total = $query->count();
-        $episodes = $query->skip(($page - 1) * $perPage)->take($perPage)->orderBy('id')->get();
+        $episodes = $query->skip(($page - 1) * $perPage)->take($perPage)->get();
 
 
         return response()->json([

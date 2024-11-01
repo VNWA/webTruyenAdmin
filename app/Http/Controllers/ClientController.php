@@ -89,14 +89,14 @@ class ClientController extends Controller
         $dataWeb = Company::find(1)->first(['url_avatar_full', 'name']);
         $dataType = Type::where('status', 1)
             ->orderBy('ORD')
-            ->get(['name', 'slug']);
-
-
+            ->get(['id','name', 'slug']);
+  $categories = Category::get(['id','name', 'slug']);
+ $nations = Nation::get(['id','name', 'slug']);
         $topViewProducts = Product::where('status', 1)
             ->take(10)
             ->orderByDesc('views')
             ->get(['id', 'url_avatar', 'name', 'slug', 'full_name']);
-        return response()->json(['dataWeb' => $dataWeb, 'dataType' => $dataType, 'topViewProducts' => $topViewProducts], 200);
+        return response()->json(['dataWeb' => $dataWeb,'categories' => $categories,'nations' => $nations, 'dataType' => $dataType, 'topViewProducts' => $topViewProducts], 200);
     }
 
     function getDataHome()
@@ -108,13 +108,19 @@ class ClientController extends Controller
             ->get();
         // Lấy các sản phẩm mới nhất
 
-        $newProducts = Product::where('status', 1)->latest('updated_at')->paginate(16)->setPath('');
+        $newProducts = Product::where('status', 1)->latest('id')->take(3)->get();
 
-
+        $rawProducts =  Product::where('status', 1)->where('category_id',1)->latest('updated_at')->take(3)->get();
+        $subProducts =  Product::where('status', 1)->where('category_id',2)->latest('updated_at')->take(3)->get();
+    $newUpdatedProducts =  Product::where('status', 1)->latest('updated_at')->take(3)->get();
         // Trả về JSON response
         return response()->json([
             'highlightProducts' => $highlightProducts,
-            'newProducts' => $newProducts
+            'newProducts' => $newProducts,
+            'rawProducts' => $rawProducts,
+            'subProducts' => $subProducts,
+            'newUpdatedProducts' => $newUpdatedProducts
+
         ], 200);
     }
 
@@ -127,6 +133,77 @@ class ClientController extends Controller
 
 
 
+        return response()->json(['products' => $products], 200);
+    }
+    public function getProductsInFilter(Request $request)
+    {
+        $categories = $request->input('category', '');
+        $nations = $request->input('nation', '');
+        $types = $request->input('type', ''); // Chuỗi type
+        $arange = $request->input('arange', 'new-updated'); // Giá trị arrange
+        $isComplete = $request->input('is_complete', 0);
+
+
+        $idCategoriesArray = $categories ? explode(',', $categories) : [];
+        $idTypesArray = $types ? explode(',', $types) : [];
+  $idNationsAray = $nations ? explode(',', $nations) : [];
+        $products = Product::query();
+        $products->where('status', 1);
+        $products->where('is_end', $isComplete);
+
+        if ($idCategoriesArray) {
+            $products->whereIn('category_id', $idCategoriesArray);
+        }
+
+  if ($idNationsAray) {
+            $products->whereIn('nation_id', $idNationsAray);
+        }
+
+        if ($idTypesArray) {
+            $idProductsWithType = ProType::whereIn('type_id', $idTypesArray)->pluck('product_id');
+            if ($idProductsWithType) {
+                $products->whereIn('id', $idProductsWithType);
+            }
+        }
+
+        // Đếm số lượng yêu thích
+        $products->withCount('wishlists');
+
+        // Sắp xếp sản phẩm theo các tiêu chí
+        switch ($arange) {
+            case 'new-updated':
+                $products->orderBy('updated_at', 'DESC');
+                break;
+            case 'old-updated':
+                $products->orderBy('updated_at', 'ASC');
+                break;
+            case 'new-created':
+                $products->orderBy('created_at', 'DESC');
+                break;
+            case 'old-created':
+                $products->orderBy('created_at', 'ASC');
+                break;
+            case 'a-z':
+                $products->orderBy('name', 'ASC'); // Thay đổi thành ASC
+                break;
+            case 'z-a':
+                $products->orderBy('name', 'DESC'); // Thay đổi thành DESC
+                break;
+            case 'most-view':
+                $products->orderBy('views', 'DESC'); // Thay đổi thành DESC
+                break;
+            case 'most-favourite':
+                $products->orderBy('wishlists_count', 'DESC'); // Sắp xếp theo số lượng wishlist
+                break;
+            default:
+                // Nếu không có điều kiện nào khớp, không sắp xếp
+                break;
+        }
+
+        // Phân trang và lấy kết quả
+        $products = $products->paginate(15)->setPath('');
+
+        // Trả về danh sách sản phẩm
         return response()->json(['products' => $products], 200);
     }
     function getProducts()
@@ -236,6 +313,7 @@ class ClientController extends Controller
             'prev_episode' => $prevEpisode,
             'next_episode' => $nextEpisode,
             'product_name' => $product->name,
+             'product_desc' => $product->desc,
         ], 200);
     }
 
