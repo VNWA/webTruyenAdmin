@@ -43,7 +43,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified',
     Route::post('/ckediter-uploads-file', [FileController::class, 'ckediterUploadsImage']);
     Route::post('/change-status', [VinawebappController::class, 'changeStatus']);
     Route::post('/change-highlight', [VinawebappController::class, 'changeHighlight']);
-    Route::post('/delete-items', [VinawebappController::class, 'deleteItems']);
+    Route::post('/delete-items ', [VinawebappController::class, 'deleteItems']);
     Route::post('/restore-items', [VinawebappController::class, 'restoreItems']);
     Route::post('/change-ord', [VinawebappController::class, 'changeORD']);
     Route::post('/get-data-district/{id}', [VinawebappController::class, 'getDataDistrict']);

@@ -16,7 +16,9 @@ class Episode extends Model
     protected static function boot()
     {
         parent::boot();
-
+        static::deleting(function ($episode) {
+            $episode->servers()->delete();
+        });
         // Khi một Episode được tạo
         static::created(function ($episode) {
             if ($episode->product) {

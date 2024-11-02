@@ -173,6 +173,7 @@ $query->orderByDesc('id');
 
     public function delete(Request $request)
     {
+
         Episode::whereIn('id', $request->dataId)->delete();
         return response()->json(['message' => "Xóa thành công"], 200);
     }

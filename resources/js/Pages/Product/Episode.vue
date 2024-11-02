@@ -502,10 +502,8 @@ const deleteItems = async () => {
     });
     console.log(dataDelete)
     try {
-        const response = await axios.post('/delete-items', {
-            tb: 'episodes',
+        const response = await axios.post(route('Episode.Delete', page.props.product.id), {
             dataId: dataDelete,
-            trash: false,
         });
 
         loadFromServer()

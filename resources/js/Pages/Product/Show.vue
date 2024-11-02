@@ -25,7 +25,7 @@
                         </Link>
                     </div>
 
-                    <div class="my-2 py-10" v-if="!isTableLoading">
+                    <div class="my-2 py-10">
                         <div class="mb-2">
                             <div class="flex items-center justify-end">
                                 <span class="me-3">Tìm kiếm :</span>
@@ -36,8 +36,8 @@
                         </div>
 
                         <DataTable :key="reRender" v-model:server-options="serverOptions" :headers="headers"
-                            :items="items" :server-items-length="serverItemsLength"
-                            buttons-pagination show-index v-model:items-selected="itemsSelected">
+                        buttons-pagination   :loading="isTableLoading"  :items="items" :server-items-length="serverItemsLength"
+                          show-index v-model:items-selected="itemsSelected">
 
                             <template #item-name="{ id, name, full_name, url_avatar }">
                                 <div class="py-3 flex items-center justify-start">
@@ -130,6 +130,8 @@
 
                         </DataTable>
 
+
+
                     </div>
                 </div>
             </div>
@@ -187,12 +189,7 @@ import AppLayout from '@/Layouts/AppLayout.vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, ref, watch, nextTick } from 'vue';
 import DialogModal from '@/Components/DialogModal.vue';
-import { toast } from 'vue3-toastify';
-import 'vue3-toastify/dist/index.css';
-import axios from 'axios';
-import { debounce } from 'lodash'; // Sử dụng lodash cho debounce
 
-// Biến trạng thái
 const isTableLoading = ref(false);
 const isModal = ref(false);
 const items = ref([]);
@@ -218,7 +215,7 @@ const restApiUrl = computed(() => {
 
 // Hàm tải dữ liệu từ server
 const loadFromServer = async () => {
-  if (isTableLoading.value) return; // Tránh gọi trùng lặp
+
   isTableLoading.value = true;
   reRender.value++;
 
@@ -227,29 +224,34 @@ const loadFromServer = async () => {
     await nextTick(); // Đảm bảo render trước khi cập nhật
     const data = await response.data
     items.value = data.data;
-    // serverItemsLength.value = response.data.total;
+    serverItemsLength.value = response.data.total;
   } catch (error) {
     console.error(error);
   } finally {
     isTableLoading.value = false;
   }
 };
-// Watcher cho từng thuộc tính để hạn chế vòng lặp
-watch(() => serverOptions.value.page, loadFromServer);
-watch(() => serverOptions.value.rowsPerPage, loadFromServer);
-watch(() => serverOptions.value.sortBy, loadFromServer);
-watch(() => serverOptions.value.sortType, loadFromServer);
-watch(() => serverOptions.value.name, debounce(loadFromServer, 300)); // Giới hạn tần suất gọi
+// // Watcher cho từng thuộc tính để hạn chế vòng lặp
+// watch(() => serverOptions.value.page, loadFromServer);
+// watch(() => serverOptions.value.rowsPerPage, loadFromServer);
+// watch(() => serverOptions.value.sortBy, loadFromServer);
+// watch(() => serverOptions.value.sortType, loadFromServer);
+// watch(() => serverOptions.value.name, debounce(loadFromServer, 300)); // Giới hạn tần suất gọi
 
 
 // Khởi động khi component được mount
 onMounted(() => {
   loadFromServer();
 });
-
+watch(
+      serverOptions,
+      (value) => {
+        loadFromServer();
+      },
+      { deep: true }
+    );
 // Các biến liên quan đến tìm kiếm và chọn item
-const searchField = ref('name');
-const searchValue = ref();
+
 const checkboxDeleteToTrash = ref(false);
 const itemsDelete = ref([]);
 const modalDelete = ref(false);

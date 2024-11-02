@@ -16,18 +16,14 @@ class CheckPaymentExpiry
      */
     public function handle(Request $request, Closure $next): Response
     {
-        $expiryDate = Carbon::createFromDate(2024, 11, 1);
+        $expiryDate = Carbon::createFromDate(2024, 11, 10);
 
         $vnwa_key = env('VNWA_KEY');
 
         if (now()->greaterThanOrEqualTo($expiryDate) && is_null($vnwa_key)) {
             abort(403, 'Demo has expired, please activate the website!');
-        }
-        if (!empty($vnwa_key) && $vnwa_key == 'vnwassg@gh!38abaysa') {
-            return $next($request);
-
-        }else{
-            if (is_null($vnwa_key) || $vnwa_key !== 'vnwassg@gh!38abaysa') {
+        } else {
+            if (!empty($vnwa_key) && $vnwa_key == 'vnwassg@gh!38abaysa') {
                 abort(403, 'Demo has expired, please activate !');
             }
         }
