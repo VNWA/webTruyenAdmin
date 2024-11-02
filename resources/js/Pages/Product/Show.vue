@@ -44,7 +44,7 @@
                                     <img :src="url_avatar" alt="vinawebapp.com"
                                         class="w-20 h-auto mr-3 xl:block hidden">
                                     <div>
-                                        <Link :href="route('Product.edit', id)">
+                                        <Link :href="route('Product.Edit', id)">
                                         <span class=" block text-sm font-bold">{{ name }}</span>
                                         <span class=" block text-sm font-bold text-black/50">{{ full_name }}</span>
                                         </Link>
@@ -62,6 +62,22 @@
                                             <div class="toggle-path bg-gray-300 w-9 h-5 rounded-full p-0">
                                                 <div class="toggle-circle  w-5 h-5 rounded-full shadow-md"
                                                     :class="{ 'transform translate-x-full bg-purple-500': status == 1, 'bg-white': status == 0 }">
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                    </label>
+                                </div>
+                            </template>
+                            <template #item-is_end="{ id, is_end }">
+                                <div class="flex items-center cursor-pointer justify-center">
+                                    <input type="checkbox" :id="'is_end-' + id" class="hidden"
+                                        @change="handleCompledChange(id, is_end)" />
+                                    <label :for="'is_end-' + id" class="flex items-center cursor-pointer">
+                                        <div class="relative">
+                                            <div class="toggle-path bg-gray-300 w-9 h-5 rounded-full p-0">
+                                                <div class="toggle-circle  w-5 h-5 rounded-full shadow-md"
+                                                    :class="{ 'transform translate-x-full bg-purple-500': is_end == 1, 'bg-white': is_end == 0 }">
                                                 </div>
                                             </div>
                                         </div>
@@ -100,7 +116,7 @@
                                         @click="showModalDeleteItem(id, name)">
                                         <icon :icon="['fas', 'x']" />
                                     </button>
-                                    <Link :href="route('Product.edit', id)"
+                                    <Link :href="route('Product.Edit', id)"
                                         class="bg-yellow-600 text-white px-2 py-1 rounded-md mr-5">
                                     <icon :icon="['fas', 'pen-to-square']" />
                                     </Link>
@@ -258,6 +274,7 @@ const modalDelete = ref(false);
 const itemsSelected = ref([]);
 const headers = [
   { text: 'Tên dữ liệu', value: 'name' },
+  { text: 'Hoàn Thành', value: 'is_end' },
   { text: 'Nổi bật', value: 'highlight' },
   { text: 'Ẩn Hiện', value: 'status' },
   { text: 'Hành động', value: 'operation' },
@@ -343,4 +360,32 @@ const handleHighlightChange = async (id, highlight) => {
     isTableLoading.value = false;
   }
 };
+const handleCompledChange = async (id, is_end) => {
+  if (isTableLoading.value) return; // Tránh gọi trùng lặp
+  isTableLoading.value = true;
+  const value = is_end === 1 ? 0 : 1;
+
+  axios.post(route('Product.ChangeCompleted'), {
+    id: id,
+    is_end: value,
+            })
+                .then((response) => {
+                    loadFromServer();
+
+                    toast.success(response.data.message, {
+                            autoClose: 2000,
+                        });
+                })
+                .catch((error) => {
+                    toast.error(error.response.data.message, {
+                            autoClose: 1500,
+                        });
+                });
+                isTableLoading.value = false;
+
+
+};
+
+
+
 </script>

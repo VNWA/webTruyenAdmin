@@ -19,7 +19,21 @@ use Str;
 
 class ProductController extends Controller
 {
+    public function ChangeCompleted(Request $request){
 
+      try {
+
+          DB::table('products')
+        ->where('id', $request->id)
+        ->update(['is_end' => $request->is_end]);
+
+      } catch (\Throwable $th) {
+        return response()->json(['message'=>'Thay đôi trạng thái Completed thất bại','error'=>$th->getMessage()],500);
+
+      }
+    return response()->json(['message'=>'Thay đôi trạng thái Completed thành công'],200);
+
+    }
     public function importManga18fxCrawl(Request $request)
     {
         DB::beginTransaction();

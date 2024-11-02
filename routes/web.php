@@ -115,7 +115,8 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified',
         Route::get('/trash', [ProductController::class, 'showTrash'])->name('Product.Trash');
         Route::get('/create', [ProductController::class, 'showCreate'])->name('Product.Create');
         Route::post('/create', [ProductController::class, 'create']);
-        Route::get('/edit/{id}', [ProductController::class, 'showEdit'])->name('Product.edit');
+        Route::post('/change-completed', [ProductController::class, 'ChangeCompleted'])->name('Product.ChangeCompleted');
+        Route::get('/edit/{id}', [ProductController::class, 'showEdit'])->name('Product.Edit');
         Route::post('/edit/{id}', [ProductController::class, 'update']);
 
         Route::prefix('episode/{product_id}')->group(function () {

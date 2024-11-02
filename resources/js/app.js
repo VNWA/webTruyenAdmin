@@ -21,7 +21,9 @@ import { LoadingPlugin } from 'vue-loading-overlay';
 import 'vue-loading-overlay/dist/css/index.css';
 
 
-
+import { toast } from 'vue3-toastify';
+import 'vue3-toastify/dist/index.css';
+window.toast = toast;
 
 
 
