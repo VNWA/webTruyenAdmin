@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Server;
+use DB;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
 use Inertia\Inertia;
@@ -11,75 +12,70 @@ use App\Models\Episode;
 use Storage;
 use Str;
 use ZipArchive;
+use GuzzleHttp\Client;
 
 class EpisodeController extends Controller
 {
     public function importMultipleZip(Request $request, $product_id)
     {
-
-        // Kiểm tra nếu không có file gửi lên
         if (!$request->hasFile('files')) {
             return response()->json(['message' => 'Không có file nào được gửi!'], 400);
         }
 
+        $client = new Client(); // Tạo một instance GuzzleHttp client
+
         foreach ($request->file('files') as $file) {
-            // Lấy tên file zip và tạo slug
-            $episodeName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
-            $slug = Str::slug($episodeName);
-
-            $episode = Episode::where('product_id', $product_id)->where('slug', $slug)->first();
-            if ($episode) {
-                $episode->touch();
-                Server::where('episode_id', $episode->id)->delete();
-            } else {
-                $episode = Episode::create([
-                    'product_id' => $product_id,
-                    'name' => $episodeName,
-                    'slug' => $slug
-                ]);
-
+            // Kiểm tra lỗi upload
+            if ($file->getError() !== UPLOAD_ERR_OK) {
+                return response()->json(['error' => 'Có lỗi khi upload file.'], 500);
             }
 
-            $product = Product::find($product_id);
-            $product->touch();
+            // Tạo hoặc cập nhật episode
+            $episodeName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+            $slug = Str::slug($episodeName);
+            $episode = Episode::firstOrCreate([
+                'product_id' => $product_id,
+                'slug' => $slug
+            ], [
+                'name' => $episodeName,
+            ]);
 
-            $episode->save();
-            $episode->product->touch();
-            // Tạo đường dẫn thư mục giải nén
-            $extractPath = "public/images/fix/{$product->slug}/{$slug}";
-            Storage::makeDirectory($extractPath); // Tạo thư mục nếu chưa tồn tại
+            // Mảng chứa URL cho zip file hiện tại
+            $urls = [];
 
-            // Lưu file zip tạm vào storage
-            $tempZipPath = $file->store('temp');
-            $fullTempPath = storage_path("app/{$tempZipPath}");
-
-            // Giải nén file zip
-            $zip = new ZipArchive;
-            if ($zip->open($fullTempPath) === TRUE) {
-                $zip->extractTo(storage_path("app/{$extractPath}"));
-                $zip->close();
-
-                // Xóa file zip tạm sau khi giải nén
-                Storage::delete($tempZipPath);
-
-                // Lấy danh sách ảnh từ thư mục đích
-                $files = Storage::files($extractPath);
-
-                // Tạo mảng URL ảnh
-                $imagePaths = array_map(fn($image) => asset(Storage::url($image)), $files);
-
-                // Lưu thông tin vào bảng servers
-                Server::create([
-                    'episode_id' => $episode->id,
-                    'images' => $imagePaths,
+            // Gửi file ZIP đến Web 2
+            try {
+                $response = $client->post(env('IMAGE_SERVER_URL') . '/api.php', [
+                    'multipart' => [
+                        [
+                            'name' => 'zip_file',
+                            'contents' => fopen($file->getRealPath(), 'r'),
+                            'filename' => $file->getClientOriginalName(),
+                        ],
+                    ],
                 ]);
-            } else {
-                return response()->json(['error' => 'Không thể mở file zip.'], 500);
+
+                // Xử lý phản hồi từ Web 2
+                $result = json_decode($response->getBody(), true);
+
+                if (isset($result['urls'])) {
+                    $urls = $result['urls'];
+                    // Lưu tất cả URL ảnh
+                    Server::create([
+                        'episode_id' => $episode->id,
+                        'images' => $urls,
+                    ]);
+                } else {
+                    return response()->json(['error' => 'Không nhận được URL từ Web 2.'], 500);
+                }
+            } catch (\Exception $e) {
+                return response()->json(['error' => 'Gửi file đến Web 2 không thành công: ' . $e->getMessage()], 500);
             }
         }
 
-        return response()->json(['message' => 'Upload và giải nén thành công!'], 200);
+        return response()->json(['message' => 'Tất cả file đã được gửi thành công!'], 200);
     }
+
 
     public function makeSlug($string)
     {
@@ -112,7 +108,7 @@ class EpisodeController extends Controller
         if ($name) {
             $query->where('name', 'like', "%$name%");
         }
-$query->orderByDesc('id');
+        $query->orderByDesc('id');
         // Lọc theo danh mục nếu có
 
 
@@ -173,8 +169,8 @@ $query->orderByDesc('id');
 
     public function delete(Request $request)
     {
-
-        Episode::whereIn('id', $request->dataId)->delete();
+        DB::table('servers')->whereIn('episode_id', $request->dataId)->delete();
+        DB::table('episodes')->whereIn('id', $request->dataId)->delete();
         return response()->json(['message' => "Xóa thành công"], 200);
     }
 }

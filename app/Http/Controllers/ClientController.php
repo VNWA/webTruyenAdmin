@@ -89,14 +89,14 @@ class ClientController extends Controller
         $dataWeb = Company::find(1)->first(['url_avatar_full', 'name']);
         $dataType = Type::where('status', 1)
             ->orderBy('ORD')
-            ->get(['id','name', 'slug']);
-  $categories = Category::get(['id','name', 'slug']);
- $nations = Nation::get(['id','name', 'slug']);
+            ->get(['id', 'name', 'slug']);
+        $categories = Category::get(['id', 'name', 'slug']);
+        $nations = Nation::get(['id', 'name', 'slug']);
         $topViewProducts = Product::where('status', 1)
             ->take(10)
             ->orderByDesc('views')
             ->get(['id', 'url_avatar', 'name', 'slug', 'full_name']);
-        return response()->json(['dataWeb' => $dataWeb,'categories' => $categories,'nations' => $nations, 'dataType' => $dataType, 'topViewProducts' => $topViewProducts], 200);
+        return response()->json(['dataWeb' => $dataWeb, 'categories' => $categories, 'nations' => $nations, 'dataType' => $dataType, 'topViewProducts' => $topViewProducts], 200);
     }
 
     function getDataHome()
@@ -110,9 +110,10 @@ class ClientController extends Controller
 
         $newProducts = Product::where('status', 1)->latest('id')->take(3)->get();
 
-        $rawProducts =  Product::where('status', 1)->where('category_id',1)->latest('updated_at')->take(3)->get();
-        $subProducts =  Product::where('status', 1)->where('category_id',2)->latest('updated_at')->take(3)->get();
-    $newUpdatedProducts =  Product::where('status', 1)->latest('updated_at')->take(3)->get();
+        $rawProducts = Product::where('status', 1)->where('category_id', 1)->latest('updated_at')->take(7)->get();
+        $subProducts = Product::where('status', 1)->where('category_id', 2)->latest('updated_at')->take(11)->get();
+        // $newUpdatedProducts =  Product::where('status', 1)->latest('updated_at')->take(3)->get();
+        $newUpdatedProducts = [];
         // Trả về JSON response
         return response()->json([
             'highlightProducts' => $highlightProducts,
@@ -146,7 +147,7 @@ class ClientController extends Controller
 
         $idCategoriesArray = $categories ? explode(',', $categories) : [];
         $idTypesArray = $types ? explode(',', $types) : [];
-  $idNationsAray = $nations ? explode(',', $nations) : [];
+        $idNationsAray = $nations ? explode(',', $nations) : [];
         $products = Product::query();
         $products->where('status', 1);
         $products->where('is_end', $isComplete);
@@ -155,7 +156,7 @@ class ClientController extends Controller
             $products->whereIn('category_id', $idCategoriesArray);
         }
 
-  if ($idNationsAray) {
+        if ($idNationsAray) {
             $products->whereIn('nation_id', $idNationsAray);
         }
 
@@ -313,7 +314,7 @@ class ClientController extends Controller
             'prev_episode' => $prevEpisode,
             'next_episode' => $nextEpisode,
             'product_name' => $product->name,
-             'product_desc' => $product->desc,
+            'product_desc' => $product->desc,
         ], 200);
     }
 

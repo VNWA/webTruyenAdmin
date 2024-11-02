@@ -52,7 +52,10 @@
                                 <draggable v-model="files" :item-key="customKeyFunction" tag="ul"
                                     class="grid grid-cols-12 gap-4">
                                     <template #item="item">
-                                        <li class="col-span-3 p-3 ButtonMutipleImage_item border">
+                                        <li class="col-span-3 p-3 ButtonMutipleImage_item relative border">
+                                            <button @click="deleteFileUpload(item.element)" class="absolute -top-1 -right-1 w-5 h-5 text-white flex items-center justify-center rounded-full bg-red-400 hover:bg-red-500">
+                                                x
+                                            </button>
                                             <span>{{ item.index + 1 }}. {{ item.element.name }}</span>
                                         </li>
                                     </template>
@@ -268,7 +271,6 @@
 
 <script setup>
 import AppLayout from '@/Layouts/AppLayout.vue';
-import Welcome from '@/Components/Welcome.vue';
 import { Link, usePage } from '@inertiajs/vue3';
 import { computed, onMounted, ref, watch, getCurrentInstance, reactive } from 'vue';
 import DialogModal from '@/Components/DialogModal.vue';
@@ -330,7 +332,16 @@ const readFiles = (event) => {
     });
     console.log(files.value)
 };
-
+const deleteFileUpload = (file) => {
+    const index = files.value.indexOf(file);
+    if (index > -1) {
+        files.value.splice(index, 1); // Xóa phần tử tại vị trí tìm thấy
+        // Cập nhật lại thứ tự cho các phần tử còn lại
+        files.value.forEach((file, i) => {
+            file.order = i + 1;
+        });
+    }
+};
 
 // Upload các file qua API
 const uploadFiles = async () => {
@@ -474,6 +485,11 @@ const serverCreateItem = (id) => {
                 });
 
             } else {
+                toast.success("Uploads dữ liệu thành công", {
+                    autoClose: 1000,
+                });
+                serverCreateType.value = '';
+                serverCreateTextarea.value = '';
                 loadFromServer();
 
             }
