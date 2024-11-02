@@ -20,235 +20,202 @@ class ClientController extends Controller
 {
     public function incrementViews($slug)
     {
-        $product = Product::where('slug', $slug)->first(); // Tìm sản phẩm theo ID
-        if ($product) {
-            $product->incrementViews(); // Tăng lượt xem
+        if ($product = Product::where('slug', $slug)->first()) {
+            $product->incrementViews();
         }
         return true;
     }
+
     function getDataSitemap()
     {
         $data = [];
 
-        // Lấy dữ liệu từ Product
+        // Lấy sản phẩm với slug
         $products = Product::where('status', 1)
             ->latest('updated_at')
             ->get(['slug', 'updated_at'])
-            ->map(function ($item) {
-                return [
-                    'slug' => '/manga/' . $item->slug,
-                    'updated_at' => $item->updated_at,
-                ];
-            })->toArray();
+            ->map(fn($item) => [
+                'slug' => '/manga/' . $item->slug,
+                'updated_at' => $item->updated_at,
+            ])->toArray();
 
-        $data = array_merge($data, $products); // Thêm vào mảng chính
+        $data = array_merge($data, $products);
 
-        // Lấy dữ liệu từ Episode với hạn chế N+1
+        // Lấy episode với hạn chế N+1
         $episodes = Episode::with('product:id,slug')
             ->latest('updated_at')
             ->get(['slug', 'product_id', 'updated_at'])
-            ->map(function ($item) {
-                return [
-                    'slug' => '/manga/' . $item->product->slug . '/' . $item->slug,
-                    'updated_at' => $item->updated_at,
-                ];
-            })->toArray();
+            ->map(fn($item) => [
+                'slug' => '/manga/' . $item->product->slug . '/' . $item->slug,
+                'updated_at' => $item->updated_at,
+            ])->toArray();
 
         $data = array_merge($data, $episodes);
 
-        // Lấy dữ liệu từ Nation
+        // Lấy dữ liệu Nation
         $nations = Nation::where('status', 1)
             ->latest('updated_at')
             ->get(['slug', 'updated_at'])
-            ->map(function ($item) {
-                return [
-                    'slug' => '/nation-' . $item->slug,
-                    'updated_at' => $item->updated_at,
-                ];
-            })->toArray();
+            ->map(fn($item) => [
+                'slug' => '/nation-' . $item->slug,
+                'updated_at' => $item->updated_at,
+            ])->toArray();
 
         $data = array_merge($data, $nations);
 
-        // Lấy dữ liệu từ Type
+        // Lấy dữ liệu Type
         $types = Type::where('status', 1)
             ->latest('updated_at')
             ->get(['slug', 'updated_at'])
-            ->map(function ($item) {
-                return [
-                    'slug' => '/type-' . $item->slug,
-                    'updated_at' => $item->updated_at,
-                ];
-            })->toArray();
+            ->map(fn($item) => [
+                'slug' => '/type-' . $item->slug,
+                'updated_at' => $item->updated_at,
+            ])->toArray();
 
         $data = array_merge($data, $types);
 
         return $data;
     }
+
     function getDataWeb()
     {
-        $dataWeb = Company::find(1)->first(['url_avatar_full', 'name']);
+        $dataWeb = Company::find(1)->only(['url_avatar_full', 'name']);
         $dataType = Type::where('status', 1)
             ->orderBy('ORD')
             ->get(['id', 'name', 'slug']);
-        $categories = Category::get(['id', 'name', 'slug']);
-        $nations = Nation::get(['id', 'name', 'slug']);
+        $categories = Category::all(['id', 'name', 'slug']);
+        $nations = Nation::all(['id', 'name', 'slug']);
         $topViewProducts = Product::where('status', 1)
-            ->take(10)
+            ->limit(10)
             ->orderByDesc('views')
             ->get(['id', 'url_avatar', 'name', 'slug', 'full_name']);
-        return response()->json(['dataWeb' => $dataWeb, 'categories' => $categories, 'nations' => $nations, 'dataType' => $dataType, 'topViewProducts' => $topViewProducts], 200);
+
+        return response()->json(compact('dataWeb', 'dataType', 'categories', 'nations', 'topViewProducts'), 200);
     }
 
-    function getDataHome()
-    {
+ function getDataHome()
+{
+    // Sản phẩm nổi bật: Sắp xếp theo views giảm dần, nếu views giống nhau thì theo id giảm dần
+    $highlightProducts = Product::where('status', 1)
+        ->orderByDesc('views')
+        ->orderByDesc('id') // Sắp xếp phụ theo id
+        ->limit(5)
+        ->get();
 
-        $highlightProducts = Product::where('status', 1)
-            ->take(5)
-            ->orderByDesc('views')
-            ->get();
-        // Lấy các sản phẩm mới nhất
+    // Sản phẩm mới: Lấy sản phẩm mới nhất theo id
+    $newProducts = Product::where('status', 1)
+        ->orderByDesc('id')
+        ->limit(3)
+        ->get();
 
-        $newProducts = Product::where('status', 1)->latest('id')->take(3)->get();
+    // Sản phẩm raw: Sắp xếp theo updated_at giảm dần, nếu giống nhau thì theo id giảm dần
+    $rawProducts = Product::where('status', 1)
+        ->where('category_id', 1)
+        ->orderByDesc('updated_at')
+        ->orderByDesc('id') // Sắp xếp phụ theo id
+        ->limit(7)
+        ->get();
 
-        $rawProducts = Product::where('status', 1)->where('category_id', 1)->latest('updated_at')->take(7)->get();
-        $subProducts = Product::where('status', 1)->where('category_id', 2)->latest('updated_at')->take(11)->get();
-        // $newUpdatedProducts =  Product::where('status', 1)->latest('updated_at')->take(3)->get();
-        $newUpdatedProducts = [];
-        // Trả về JSON response
-        return response()->json([
-            'highlightProducts' => $highlightProducts,
-            'newProducts' => $newProducts,
-            'rawProducts' => $rawProducts,
-            'subProducts' => $subProducts,
-            'newUpdatedProducts' => $newUpdatedProducts
+    // Sản phẩm sub: Sắp xếp theo updated_at giảm dần, nếu giống nhau thì theo id giảm dần
+    $subProducts = Product::where('status', 1)
+        ->where('category_id', 2)
+        ->orderByDesc('updated_at')
+        ->orderByDesc('id') // Sắp xếp phụ theo id
+        ->limit(11)
+        ->get();
 
-        ], 200);
-    }
+    // Trả về JSON response
+    return response()->json(compact('highlightProducts', 'newProducts', 'rawProducts', 'subProducts'), 200);
+}
 
     function getTrendingProducts()
     {
+        $products = Product::where('status', 1)
+            ->latest('views')
+            ->paginate(15);
 
-
-        $products = Product::where('status', 1)->latest('views')->paginate(15)->setPath('');
-
-
-
-
-        return response()->json(['products' => $products], 200);
+        return response()->json(compact('products'), 200);
     }
+
     public function getProductsInFilter(Request $request)
     {
-        $categories = $request->input('category', '');
-        $nations = $request->input('nation', '');
-        $types = $request->input('type', ''); // Chuỗi type
-        $arange = $request->input('arange', 'new-updated'); // Giá trị arrange
-        $isComplete = $request->input('is_complete', 0);
+        $products = Product::query()->where('status', 1);
 
-
-        $idCategoriesArray = $categories ? explode(',', $categories) : [];
-        $idTypesArray = $types ? explode(',', $types) : [];
-        $idNationsAray = $nations ? explode(',', $nations) : [];
-        $products = Product::query();
-        $products->where('status', 1);
-        $products->where('is_end', $isComplete);
-
-        if ($idCategoriesArray) {
-            $products->whereIn('category_id', $idCategoriesArray);
+        if ($categories = $request->input('category')) {
+            $products->whereIn('category_id', explode(',', $categories));
         }
 
-        if ($idNationsAray) {
-            $products->whereIn('nation_id', $idNationsAray);
+        if ($nations = $request->input('nation')) {
+            $products->whereIn('nation_id', explode(',', $nations));
         }
 
-        if ($idTypesArray) {
-            $idProductsWithType = ProType::whereIn('type_id', $idTypesArray)->pluck('product_id');
-            if ($idProductsWithType) {
-                $products->whereIn('id', $idProductsWithType);
-            }
+        if ($types = $request->input('type')) {
+            $idProductsWithType = ProType::whereIn('type_id', explode(',', $types))->pluck('product_id');
+            $products->whereIn('id', $idProductsWithType);
         }
 
-        // Đếm số lượng yêu thích
-        $products->withCount('wishlists');
+        $products->where('is_end', $request->input('is_complete', 0))->withCount('wishlists');
 
-        // Sắp xếp sản phẩm theo các tiêu chí
-        switch ($arange) {
+        switch ($request->input('arange', 'new-updated')) {
             case 'new-updated':
-                $products->orderBy('updated_at', 'DESC');
+                $products->orderByDesc('updated_at');
                 break;
             case 'old-updated':
-                $products->orderBy('updated_at', 'ASC');
+                $products->orderBy('updated_at');
                 break;
             case 'new-created':
-                $products->orderBy('created_at', 'DESC');
+                $products->orderByDesc('created_at');
                 break;
             case 'old-created':
-                $products->orderBy('created_at', 'ASC');
+                $products->orderBy('created_at');
                 break;
             case 'a-z':
-                $products->orderBy('name', 'ASC'); // Thay đổi thành ASC
+                $products->orderBy('name');
                 break;
             case 'z-a':
-                $products->orderBy('name', 'DESC'); // Thay đổi thành DESC
+                $products->orderByDesc('name');
                 break;
             case 'most-view':
-                $products->orderBy('views', 'DESC'); // Thay đổi thành DESC
+                $products->orderByDesc('views');
                 break;
             case 'most-favourite':
-                $products->orderBy('wishlists_count', 'DESC'); // Sắp xếp theo số lượng wishlist
-                break;
-            default:
-                // Nếu không có điều kiện nào khớp, không sắp xếp
+                $products->orderByDesc('wishlists_count');
                 break;
         }
 
-        // Phân trang và lấy kết quả
-        $products = $products->paginate(15)->setPath('');
+        $products = $products->paginate(15);
 
-        // Trả về danh sách sản phẩm
-        return response()->json(['products' => $products], 200);
+        return response()->json(compact('products'), 200);
     }
+
     function getProducts()
     {
+        $products = Product::where('status', 1)
+            ->latest('updated_at')
+            ->paginate(15);
 
-
-        $products = Product::where('status', 1)->latest('updated_at')->paginate(15)->setPath('');
-
-
-
-
-        return response()->json(['products' => $products], 200);
+        return response()->json(compact('products'), 200);
     }
+
     public function getWishlistCountWithProduct($slug)
     {
-        $product = Product::where('slug', $slug)->first();
-        if ($product) {
+        if ($product = Product::where('slug', $slug)->first()) {
             $countWishlist = Wishlist::where('product_id', $product->id)->count();
 
-            return response()->json([
-                'count_wishlist' => $countWishlist,
-            ], 200);
+            return response()->json(['count_wishlist' => $countWishlist], 200);
         }
     }
+
     function getDetailProduct($slug)
     {
         $company = Company::first(['meta_title', 'meta_desc', 'meta_image']);
-        $product = Product::where('slug', $slug)
-            ->with('nation')
-            ->with('year')
-            ->with('types')
-            ->with('episodes')
-            ->first();
-        $title = $product->name;
-        $meta_title = $product->meta_title ?: $company->name;
-        $meta_desc = $product->meta_desc ?: $company->meta_desc;
-        $meta_image = $product->meta_image ?: $company->meta_image;
-
+        $product = Product::where('slug', $slug)->with(['nation', 'year', 'types', 'episodes'])->first();
 
         return response()->json([
-            'title' => $title,
-            'meta_title' => $meta_title,
-            'meta_desc' => $meta_desc,
-            'meta_image' => $meta_image,
+            'title' => $product->name,
+            'meta_title' => $product->meta_title ?: $company->name,
+            'meta_desc' => $product->meta_desc ?: $company->meta_desc,
+            'meta_image' => $product->meta_image ?: $company->meta_image,
             'product' => $product,
         ], 200);
     }
@@ -256,21 +223,21 @@ class ClientController extends Controller
     function ratingProduct(Request $request)
     {
         if ($request->client_ip && $request->rating && $request->product_id) {
-            $client_ip = str_replace(' ', '', $request->client_ip);
-            $client_ip = str_replace('"', '', $client_ip);
-            $client_ip = str_replace("'", '', $client_ip);
-
-            $Rating = Rating::updateOrCreate(['product_id' => $request->product_id, 'client_ip' => $client_ip], ['rating' => $request->rating]);
+            $Rating = Rating::updateOrCreate(
+                ['product_id' => $request->product_id, 'client_ip' => filter_var($request->client_ip, FILTER_SANITIZE_STRING)],
+                ['rating' => $request->rating]
+            );
 
             $totalRatings = Rating::where('product_id', $request->product_id)->count();
             $totalRatingPoints = Rating::where('product_id', $request->product_id)->sum('rating');
             $averageRating = $totalRatingPoints / $totalRatings;
-            $clientRating = $request->rating;
-            return response()->json(['totalRatings' => $totalRatings, 'averageRating' => $averageRating, 'clientRating' => $clientRating], 200);
+
+            return response()->json(compact('totalRatings', 'averageRating', 'clientRating'), 200);
         } else {
             return response()->json(['error' => 'Không đủ dữ liệu'], 200);
         }
     }
+
 
     public function getDataEpisode($slug, $episode_slug)
     {

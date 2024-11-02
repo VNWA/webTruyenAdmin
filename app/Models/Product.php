@@ -11,6 +11,7 @@ class Product extends Model
     use HasFactory;
     protected $fillable = ['category_id','nation_id', 'is_end', 'views', 'nation_id', 'status', 'highlight', 'rating_qnt', 'url_avatar', 'url_bg', 'date', 'full_name', 'name', 'slug', 'desc', 'meta_image', 'meta_title', 'meta_desc'];
     protected $appends = ['newEpisode','countWishlist'];
+    public $timestamps = true;
     public function getCountWishlistAttribute()
     {
         // Sử dụng collection để đếm thay vì query lại từ DB
@@ -18,7 +19,9 @@ class Product extends Model
     }
     public function incrementViews()
     {
+        $this->timestamps = false; // Tạm thời tắt cập nhật timestamps
         $this->increment('views'); // Tăng giá trị của trường views
+        $this->timestamps = true; //
     }
     public function wishlists()
     {

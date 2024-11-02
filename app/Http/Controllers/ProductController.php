@@ -19,19 +19,20 @@ use Str;
 
 class ProductController extends Controller
 {
-    public function ChangeCompleted(Request $request){
+    public function ChangeCompleted(Request $request)
+    {
 
-      try {
+        try {
 
-          DB::table('products')
-        ->where('id', $request->id)
-        ->update(['is_end' => $request->is_end]);
+            DB::table('products')
+                ->where('id', $request->id)
+                ->update(['is_end' => $request->is_end]);
 
-      } catch (\Throwable $th) {
-        return response()->json(['message'=>'Thay đôi trạng thái Completed thất bại','error'=>$th->getMessage()],500);
+        } catch (\Throwable $th) {
+            return response()->json(['message' => 'Thay đôi trạng thái Completed thất bại', 'error' => $th->getMessage()], 500);
 
-      }
-    return response()->json(['message'=>'Thay đôi trạng thái Completed thành công'],200);
+        }
+        return response()->json(['message' => 'Thay đôi trạng thái Completed thành công'], 200);
 
     }
     public function importManga18fxCrawl(Request $request)
@@ -86,84 +87,6 @@ class ProductController extends Controller
     }
 
 
-    // private function importProductCrawl($productData, $is_18)
-    // {
-
-    //     $productName = $productData['title'];
-    //     $productSlug = Str::slug($productName);
-    //     $product = Product::where('slug', $productSlug)->first();
-
-    //     if (!$product) {
-    //         // Tải ảnh từ URL
-    //         $imagePath = $productData['image'];
-    //         $imageContent = file_get_contents($imagePath);
-    //         $imageName = basename($imagePath); // Lấy tên gốc từ URL
-
-    //         // Lưu ảnh vào storage
-    //         $imageStoragePath = 'images/crawls/' . $productSlug . '/' . $imageName;
-    //         Storage::disk('public')->put($imageStoragePath, $imageContent);
-    //         $fullImageUrl = Storage::url($imageStoragePath);
-
-    //         $product = Product::create([
-    //             'url_avatar' => $fullImageUrl,
-    //             'is_18' => $is_18,
-    //             'name' => $productName,
-    //             'slug' => $productSlug
-    //         ]);
-    //     }
-
-    //     $chapters = $productData['chapters'];
-    //     foreach ($chapters as $chapter) {
-    //         $episodeName = $chapter['title'];
-    //         $episodeSlug = Str::slug($episodeName);
-    //         $episode = Episode::where('slug', $episodeSlug)->where('product_id', $product->id)->first();
-
-    //         if ($episode) {
-    //             if (!Server::where('episode_id', $episode->id)->exists()) {
-    //                 $serverImages = $chapter['images'];
-    //                 $newIamges = [];
-    //                 foreach ($serverImages as $imageUrl) {
-    //                     // Tải ảnh từ URL
-    //                     $imageContent = file_get_contents($imageUrl);
-    //                     $imageName = basename($imageUrl); // Lấy tên gốc từ URL
-    //                     $imageStoragePath = 'images/crawls/' . $productSlug . '/' . $episodeSlug . '/' . $imageName;
-    //                     Storage::disk('public')->put($imageStoragePath, $imageContent);
-    //                     $imageFullUrl = Storage::url($imageStoragePath);
-
-    //                     // Lưu đường dẫn ảnh vào mảng hoặc cơ sở dữ liệu theo yêu cầu
-    //                 }
-    //                 Server::create(['episode_id' => $episode->id, 'images' => $newIamges]);
-
-    //             }
-    //         } else {
-
-    //             $episode = Episode::create([
-    //                 'product_id' => $product->id,
-    //                 'name' => $episodeName,
-    //                 'slug' => $episodeSlug
-    //             ]);
-
-    //             $serverImages = $chapter['images'];
-    //             $newIamges = [];
-    //             foreach ($serverImages as $imageUrl) {
-    //                 // Tải ảnh từ URL
-    //                 $imageContent = file_get_contents($imageUrl);
-    //                 $imageName = basename($imageUrl); // Lấy tên gốc từ URL
-    //                 $imageStoragePath = 'images/crawls/' . $productSlug . '/' . $episodeSlug . '/' . $imageName;
-    //                 Storage::disk('public')->put($imageStoragePath, $imageContent);
-    //                 $imageFullUrl = Storage::url($imageStoragePath);
-    //                 $newIamges[] = $imageFullUrl;
-    //             }
-    //             Server::create(['episode_id' => $episode->id, 'images' => $newIamges]);
-    //         }
-    //     }
-
-    //     return response()->json(['success' => true]);
-
-
-    // }
-
-
     function createSlug($slug)
     {
         $check = Product::where('slug', $slug)->first();
@@ -176,41 +99,29 @@ class ProductController extends Controller
             ->first();
         return $check ? true : false;
     }
+
+
     public function loadDataTable(Request $request)
     {
-        $perPage = $request->get('per_page', 10);
-        $page = $request->get('page', 1);
-        $sortBy = $request->get('sortBy', 'updated_at');
-        $sortType = $request->get('sortType', 'DESC');
-        $name = $request->get('name');
+        $perPage = $request->input('per_page', 10);
+        $sortBy = $request->input('sortBy', 'updated_at');
+        $sortType = $request->input('sortType', 'DESC');
+        $name = $request->input('name');
 
-        // Khởi tạo query
-        $query = Product::query();
+        // Khởi tạo query với các điều kiện lọc và sắp xếp
+        $query = Product::query()
+            ->when($name, function ($query, $name) {
+                return $query->where('name', 'like', "%$name%");
+            })
+            ->orderBy($sortBy, $sortType);
 
-        // Lọc theo tên product nếu có
-        if ($name) {
-            $query->where('name', 'like', "%$name%");
-        }
+        // Sử dụng paginate để phân trang và lấy dữ liệu
+        $products = $query->paginate($perPage);
 
-        // Lọc theo danh mục nếu có
-
-
-        // Sắp xếp và phân trang
-        $total = $query->count();
-        $products = $query->skip(($page - 1) * $perPage)->take($perPage)->latest( 'updated_at')->get();
-
-        return response()->json([
-            'data' => $products,
-            'current_page' => $page,
-            'per_page' => $perPage,
-            'total' => $total,
-            'last_page' => ceil($total / $perPage),
-        ], 200);
-
-
-
-
+        // Trả về JSON response với dữ liệu phân trang
+        return response()->json($products, 200);
     }
+
     function showIndex()
     {
 
