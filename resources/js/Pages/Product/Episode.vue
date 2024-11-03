@@ -1,4 +1,6 @@
 <template>
+    <Loading v-if="isPageLoading" />
+
     <AppLayout title="Danh sách tập của truyện ">
         <template #header>
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">
@@ -53,7 +55,8 @@
                                     class="grid grid-cols-12 gap-4">
                                     <template #item="item">
                                         <li class="col-span-3 p-3 ButtonMutipleImage_item relative border">
-                                            <button @click="deleteFileUpload(item.element)" class="absolute -top-1 -right-1 w-5 h-5 text-white flex items-center justify-center rounded-full bg-red-400 hover:bg-red-500">
+                                            <button @click="deleteFileUpload(item.element)"
+                                                class="absolute -top-1 -right-1 w-5 h-5 text-white flex items-center justify-center rounded-full bg-red-400 hover:bg-red-500">
                                                 x
                                             </button>
                                             <span>{{ item.index + 1 }}. {{ item.element.name }}</span>
@@ -279,6 +282,9 @@ import 'vue3-toastify/dist/index.css';
 import axios from 'axios';
 import ButtonMutipleImage from '@/Components/ButtonMutipleImage.vue';
 import draggable from 'vuedraggable';
+import Loading from '@/Components/Loading.vue';
+const isPageLoading = ref(false);
+
 const isEditEpisode = ref(false)
 const page = usePage()
 const episodeUpdate = reactive({
@@ -291,6 +297,7 @@ const showModalUpdateEpisode = (id, name) => {
     episodeUpdate.name = name;
 }
 const handleUpdateEpisode = async () => {
+    isPageLoading.value = true;
     try {
         const response = await axios.post(route('Episode.Update', [page.props.product.id, episodeUpdate.id]), episodeUpdate,);
         loadFromServer();
@@ -302,6 +309,8 @@ const handleUpdateEpisode = async () => {
         toast.error('Lỗi!');
 
     }
+    isPageLoading.value = false;
+
 }
 
 
@@ -345,6 +354,8 @@ const deleteFileUpload = (file) => {
 
 // Upload các file qua API
 const uploadFiles = async () => {
+
+    isPageLoading.value = true;
     console.log(page.props.product.id)
     if (files.value.length === 0) {
         toast.success('Chọn ít nhất 1 file zip');
@@ -371,6 +382,7 @@ const uploadFiles = async () => {
         toast.success('Lỗi!');
 
     }
+    isPageLoading.value = false;
 };
 
 
@@ -498,7 +510,6 @@ const serverCreateItem = (id) => {
             console.log(error);
         });
 }
-
 
 
 const checkboxDeleteToTrash = ref(false);

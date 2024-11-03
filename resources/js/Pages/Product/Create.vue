@@ -213,9 +213,7 @@ export default {
 
     methods: {
         setDataMetaTitle() {
-            if (this.name && this.full_name) {
-                this.meta_title =  this.name + ' - ' + this.full_name + ' Vietsub fullHD Lồng Tiếng';
-            }
+
         },
         setDataMetaImage(childData) {
             this.dataMetaImage = childData;

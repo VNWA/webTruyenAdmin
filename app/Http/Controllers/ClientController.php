@@ -18,6 +18,34 @@ use App\Models\Server;
 use Carbon\Carbon;
 class ClientController extends Controller
 {
+    protected $metaTitle;
+    protected $metaImage;
+    protected $metaDesc;
+    public function __construct()
+    {
+        $this->setDefaultMeta();
+    }
+
+    // Hàm lấy giá trị mặc định từ database
+    protected function setDefaultMeta()
+    {
+        $company = Company::first(); // Lấy bản ghi đầu tiên (mặc định)
+
+        $this->metaTitle = $company->meta_title ?? 'Tiêu đề mặc định';
+        $this->metaImage = $company->meta_image ?? '/image.jpg';
+        $this->metaDesc = $company->meta_desc ?? 'Mô tả mặc định';
+    }
+
+    // Hàm dùng chung để set SEO meta cho các view
+    protected function setMeta($title = null, $image = null, $desc = null)
+    {
+        return [
+            'metaTitle' => $title ?? $this->metaTitle,
+            'metaImage' => $image ?? $this->metaImage,
+            'metaDesc' => $desc ?? $this->metaDesc,
+        ];
+    }
+
     public function incrementViews($slug)
     {
         if ($product = Product::where('slug', $slug)->first()) {
@@ -93,40 +121,42 @@ class ClientController extends Controller
         return response()->json(compact('dataWeb', 'dataType', 'categories', 'nations', 'topViewProducts'), 200);
     }
 
- function getDataHome()
-{
-    // Sản phẩm nổi bật: Sắp xếp theo views giảm dần, nếu views giống nhau thì theo id giảm dần
-    $highlightProducts = Product::where('status', 1)
-        ->orderByDesc('views')
-        ->orderByDesc('id') // Sắp xếp phụ theo id
-        ->limit(5)
-        ->get();
+    function getDataHome()
+    {
+        // Sản phẩm nổi bật: Sắp xếp theo views giảm dần, nếu views giống nhau thì theo id giảm dần
+        $highlightProducts = Product::where('status', 1)
+            ->orderByDesc('views')
+            ->orderByDesc('id') // Sắp xếp phụ theo id
+            ->limit(5)
+            ->get();
 
-    // Sản phẩm mới: Lấy sản phẩm mới nhất theo id
-    $newProducts = Product::where('status', 1)
-        ->orderByDesc('id')
-        ->limit(3)
-        ->get();
+        // Sản phẩm mới: Lấy sản phẩm mới nhất theo id
+        $newProducts = Product::where('status', 1)
+            ->orderByDesc('id')
+            ->limit(3)
+            ->get();
 
-    // Sản phẩm raw: Sắp xếp theo updated_at giảm dần, nếu giống nhau thì theo id giảm dần
-    $rawProducts = Product::where('status', 1)
-        ->where('category_id', 1)
-        ->orderByDesc('updated_at')
-        ->orderByDesc('id') // Sắp xếp phụ theo id
-        ->limit(7)
-        ->get();
+        // Sản phẩm raw: Sắp xếp theo updated_at giảm dần, nếu giống nhau thì theo id giảm dần
+        $rawProducts = Product::where('status', 1)
+            ->where('category_id', 1)
+            ->orderByDesc('updated_at')
+            ->orderByDesc('id') // Sắp xếp phụ theo id
+            ->limit(7)
+            ->get();
 
-    // Sản phẩm sub: Sắp xếp theo updated_at giảm dần, nếu giống nhau thì theo id giảm dần
-    $subProducts = Product::where('status', 1)
-        ->where('category_id', 2)
-        ->orderByDesc('updated_at')
-        ->orderByDesc('id') // Sắp xếp phụ theo id
-        ->limit(11)
-        ->get();
+        // Sản phẩm sub: Sắp xếp theo updated_at giảm dần, nếu giống nhau thì theo id giảm dần
+        $subProducts = Product::where('status', 1)
+            ->where('category_id', 2)
+            ->orderByDesc('updated_at')
+            ->orderByDesc('id') // Sắp xếp phụ theo id
+            ->limit(11)
+            ->get();
 
-    // Trả về JSON response
-    return response()->json(compact('highlightProducts', 'newProducts', 'rawProducts', 'subProducts'), 200);
-}
+        // Trả về JSON response
+
+        $meta = $this->setMeta();
+        return response()->json(compact('highlightProducts', 'newProducts', 'rawProducts', 'subProducts', 'meta'), 200);
+    }
 
     function getTrendingProducts()
     {
@@ -210,12 +240,10 @@ class ClientController extends Controller
     {
         $company = Company::first(['meta_title', 'meta_desc', 'meta_image']);
         $product = Product::where('slug', $slug)->with(['nation', 'year', 'types', 'episodes'])->first();
+        $meta = $this->setMeta($product->meta_title, $product->meta_desc, $product->meta_image);
 
         return response()->json([
-            'title' => $product->name,
-            'meta_title' => $product->meta_title ?: $company->name,
-            'meta_desc' => $product->meta_desc ?: $company->meta_desc,
-            'meta_image' => $product->meta_image ?: $company->meta_image,
+            'meta' => $meta,
             'product' => $product,
         ], 200);
     }
@@ -241,7 +269,6 @@ class ClientController extends Controller
 
     public function getDataEpisode($slug, $episode_slug)
     {
-        $company = Company::first(['meta_title', 'meta_desc', 'meta_image']);
 
         // Lấy product
         $product = Product::where('slug', $slug)->firstOrFail();
@@ -264,18 +291,18 @@ class ClientController extends Controller
         $prevEpisode = $currentIndex > 0 ? $episodes[$currentIndex - 1] : null;
         $nextEpisode = $currentIndex < $episodes->count() - 1 ? $episodes[$currentIndex + 1] : null;
 
-        // Meta thông tin
-        $title = $episode->name;
-        $meta_title = $product->meta_title ?: $product->name;
-        $meta_desc = $product->meta_desc ?: $company->meta_desc;
-        $meta_image = $product->meta_image ?: $company->meta_image;
+
+
+        $meta_title = $episode->name . ' - ' . $product->name;
+
+
+
+        $meta = $this->setMeta($meta_title, $product->meta_desc, $product->meta_image);
+
 
         // Trả về response JSON
         return response()->json([
-            'title' => $title,
-            'meta_title' => $meta_title,
-            'meta_desc' => $meta_desc,
-            'meta_image' => $meta_image,
+            'meta' => $meta,
             'episode' => $episode,
             'episodes' => $episodes,
             'prev_episode' => $prevEpisode,

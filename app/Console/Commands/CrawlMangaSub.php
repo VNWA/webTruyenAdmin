@@ -4,18 +4,17 @@ namespace App\Console\Commands;
 
 use App\Models\Episode;
 use App\Models\Product;
-use App\Models\ProType;
 use App\Models\Server;
 use GuzzleHttp\Client;
 use Str;
 use Symfony\Component\DomCrawler\Crawler;
 use Illuminate\Console\Command;
 
-class CrawlManga extends Command
+class CrawlMangaSub extends Command
 {
-    protected $signature = 'crawl:manga';
-    protected $description = 'Crawl manga products and send to Laravel endpoint';
 
+    protected $signature = 'crawl:manga-sub';
+    protected $description = 'Crawl manga products and send to Laravel endpoint';
     private $client;
 
     public function __construct()
@@ -52,25 +51,15 @@ class CrawlManga extends Command
                 $image = $node->filter('.thumb-manga a img')->attr('data-src');
                 $slug = Str::slug($title);
 
-                $product = Product::where('slug', $slug)->first();
-                if (!$product) {
-                    $product = Product::create(
-                        [
-                            'category_id' => 2,
-                            'nation_id' => 1,
-                            'url_avatar' => $image,
-                            'name' => $title,
-                            'slug' => $slug
-                        ]
-                    );
-
-                    ProType::create([
-                        'type_id' => 26,
-                        'product_id' => $product->id
-                    ]);
-
-
-                }
+                // Tạo hoặc lấy sản phẩm
+                $product = Product::firstOrCreate(
+                    ['slug' => $slug], // Điều kiện tìm kiếm
+                    [ // Dữ liệu để tạo mới
+                        'category_id' => 1,
+                        'url_avatar' => $image,
+                        'name' => $title,
+                    ]
+                );
 
                 $this->info('Created or retrieved product: ' . $product->name); // Thông báo đã tạo hoặc lấy sản phẩm
 
@@ -105,7 +94,10 @@ class CrawlManga extends Command
                 ];
             });
 
-
+            // Sắp xếp các chương từ mới nhất đến cũ nhất
+            // usort($chapters, function ($a, $b) {
+            //     return $b['number'] <=> $a['number']; // Sắp xếp theo số chương giảm dần
+            // });
             $reversedArray = array_reverse($chapters);
             // Lưu vào cơ sở dữ liệu
             foreach ($reversedArray as $chapter) {
@@ -118,11 +110,8 @@ class CrawlManga extends Command
                         'name' => $chapter['title'],
                     ]
                 );
-                $server = Server::where('episode_id', $episode->id)->exists();
-                if (!$server) {
 
-                    $this->getImagesFromChapter($chapter['link'], $episode->id);
-                }
+                $this->getImagesFromChapter($chapter['link'], $episode->id);
             }
 
             return array_reverse($chapters); // Ngược lại để giữ thứ tự từ mới đến cũ
@@ -156,7 +145,7 @@ class CrawlManga extends Command
                 }
             });
 
-
+            // Lưu hình ảnh vào bảng servers
             Server::create([
                 'episode_id' => $episode_id,
                 'images' => $images// Lưu dưới dạng JSON
@@ -168,4 +157,5 @@ class CrawlManga extends Command
             return [];
         }
     }
+
 }
