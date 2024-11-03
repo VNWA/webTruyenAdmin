@@ -52,7 +52,8 @@ class CrawlManga extends Command
                 $image = $node->filter('.thumb-manga a img')->attr('data-src');
                 $slug = Str::slug($title);
 
-                $product = Product::where('slug', $slug)->first();
+                $product = Product::where('name', $title)->orWhere('slug', $slug)->first();
+
                 if (!$product) {
                     $product = Product::create(
                         [
@@ -159,7 +160,7 @@ class CrawlManga extends Command
 
             Server::create([
                 'episode_id' => $episode_id,
-                'images' => $images// Lưu dưới dạng JSON
+                'images' => $images
             ]);
 
             return $images;

@@ -15,10 +15,151 @@ use App\Models\Type;
 use App\Models\ProType;
 use Storage;
 use Str;
-
+use GuzzleHttp\Client;
+use Symfony\Component\DomCrawler\Crawler;
 
 class ProductController extends Controller
 {
+    public function showCrawlProduct()
+    {
+        $categories = Category::get(['id', 'name']);
+        $nations = Nation::get(['id', 'name']);
+        $types = Type::select('id', 'name')->get()->map(fn($type) => [
+            'label' => $type->name,
+            'value' => $type->id
+        ]);
+
+        return Inertia::render('Product/Crawl', ['categories' => $categories, 'nations' => $nations, 'types' => $types]);
+    }
+
+
+    public function ImportCrawlProduct(Request $request)
+    {
+        $request->validate([
+            'url' => 'required|url|min:10',
+            'category_id' => 'required|integer|exists:categories,id',
+            'nation_id' => 'required|integer|exists:nations,id',
+            'types' => 'required|array',
+            'types.*' => 'integer|exists:types,id'
+        ]);
+
+        $client = new Client([
+            'headers' => [
+                'User-Agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.83 Safari/537.36'
+            ]
+        ]);
+
+        try {
+            $response = $client->get($request->url);
+        } catch (\Exception $e) {
+            return response()->json(['error' => 'Failed to fetch URL: ' . $e->getMessage()], 500);
+        }
+
+        $html = (string) $response->getBody();
+        $crawler = new Crawler($html);
+
+        $title = $crawler->filter('div.post-title h1')->text();
+        $image = $crawler->filter('.summary_image a img')->attr('data-src');
+        $slug = Str::slug($title);
+
+        $product = Product::where('name', $title)
+            ->orWhere('slug', $slug)
+            ->first();
+
+        if (!$product) {
+            try {
+                $product = Product::create([
+                    'category_id' => $request->category_id,
+                    'nation_id' => $request->nation_id,
+                    'url_avatar' => $image,
+                    'name' => $title,
+                    'slug' => $slug,
+                ]);
+
+                foreach ($request->types as $key => $value) {
+                    ProType::firstOrCreate([
+                        'type_id' => $value,
+                        'product_id' => $product->id
+                    ]);
+                }
+            } catch (\Throwable $e) {
+                return response()->json(['message' => $e->getMessage()], 500);
+
+            }
+
+        }
+
+
+
+        $chapters = [];
+        $crawler->filter('ul.row-content-chapter li.a-h')->each(function (Crawler $node) use (&$chapters) {
+            $chapterLink = $node->filter('a')->attr('href');
+            $chapterTitle = $node->filter('a')->text();
+            $chapterNumber = $this->extractChapterNumber($chapterTitle);
+
+            $chapters[] = [
+                'link' => 'https://manga18fx.com/' . $chapterLink,
+                'title' => $chapterTitle,
+                'number' => $chapterNumber
+            ];
+        });
+
+        $reversedArray = array_reverse($chapters);
+
+        foreach ($reversedArray as $chapter) {
+            $episode = Episode::firstOrCreate(
+                [
+                    'product_id' => $product->id,
+                    'slug' => Str::slug($chapter['title']),
+                ],
+                [
+                    'name' => $chapter['title'],
+                ]
+            );
+
+            if (!Server::where('episode_id', $episode->id)->exists()) {
+                $this->getImagesFromChapter($client, $chapter['link'], $episode->id);
+            }
+        }
+
+        return response()->json(['message' => 'Data imported successfully'], 200);
+    }
+
+    private function extractChapterNumber($title)
+    {
+        preg_match('/\d+/', $title, $matches);
+        return isset($matches[0]) ? (int) $matches[0] : 0;
+    }
+
+    private function getImagesFromChapter($client, $chapterLink, $episode_id)
+    {
+        try {
+            $response = $client->get($chapterLink);
+            $html = (string) $response->getBody();
+            $crawler = new Crawler($html);
+
+            $images = [];
+
+            $crawler->filter('div.read-content .page-break img')->each(function (Crawler $node) use (&$images) {
+                $imageSrc = $node->attr('data-src') ?? $node->attr('src');
+                if ($imageSrc) {
+                    $images[] = $imageSrc;
+                }
+            });
+
+            Server::create([
+                'episode_id' => $episode_id,
+                'images' => $images
+            ]);
+
+            return $images;
+        } catch (\Exception $e) {
+            // Log lỗi nếu cần thiết
+            \Log::error('Error fetching images: ' . $e->getMessage());
+            return [];
+        }
+    }
+
     public function ChangeCompleted(Request $request)
     {
 

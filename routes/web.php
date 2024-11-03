@@ -39,7 +39,7 @@ Route::get('/', function () {
     ]);
 });
 
-Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified','check.payment.expiry'])->group(function () {
+Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified', 'check.payment.expiry'])->group(function () {
     Route::post('/ckediter-uploads-file', [FileController::class, 'ckediterUploadsImage']);
     Route::post('/change-status', [VinawebappController::class, 'changeStatus']);
     Route::post('/change-highlight', [VinawebappController::class, 'changeHighlight']);
@@ -118,6 +118,8 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified',
         Route::post('/change-completed', [ProductController::class, 'ChangeCompleted'])->name('Product.ChangeCompleted');
         Route::get('/edit/{id}', [ProductController::class, 'showEdit'])->name('Product.Edit');
         Route::post('/edit/{id}', [ProductController::class, 'update']);
+        Route::get( '/crawl', [ProductController::class, 'showCrawlProduct'])->name('Product.Crawl.Show');
+        Route::post( '/crawl', [ProductController::class, 'ImportCrawlProduct'])->name('Product.Crawl.Import');
 
         Route::prefix('episode/{product_id}')->group(function () {
 

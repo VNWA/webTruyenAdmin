@@ -9,21 +9,26 @@
         <div class="py-2">
             <div class="max-w-12xl mx-auto sm:px-6 lg:px-8">
                 <div class="bg-white overflow-hidden shadow-xl sm:rounded-lg pt-8 pb-12 px-2">
-                    <div class="float-left">
-                        <button :disabled="itemsSelected.length <= 0"
-                            class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-2 rounded mr-4 text-xs"
-                            @click="showModalDeleteMutipleItem">
-                            <icon :icon="['fas', 'x']" class="mr-1" /> Xóa dữ liệu chọn
-                        </button>
+                    <div class="flex items-center justify-between gap-4 w-full">
+                        <div class="">
+                            <button :disabled="itemsSelected.length <= 0"
+                                class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-2 rounded mr-4 text-xs"
+                                @click="showModalDeleteMutipleItem">
+                                <icon :icon="['fas', 'x']" class="mr-1" /> Xóa dữ liệu chọn
+                            </button>
+                        </div>
+                        <div class=" text-xs uppercase flex justify-end gap-4">
+                            <Link :href="route('Product.Crawl.Show')"
+                                class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-2 rounded ">
+                            <icon :icon="['fas', 'plus']" /> Crawl manga
+                            </Link>
+                            <Link :href="route('Product.Create')"
+                                class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-2 rounded ">
+                            <icon :icon="['fas', 'plus']" /> Thêm dữ liệu
+                            </Link>
+                        </div>
                     </div>
-                    <div class="float-right text-xs uppercase">
 
-
-                        <Link :href="route('Product.Create')"
-                            class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-2 rounded ">
-                        <icon :icon="['fas', 'plus']" /> Thêm dữ liệu
-                        </Link>
-                    </div>
 
                     <div class="my-2 py-10">
                         <div class="mb-2">
@@ -36,8 +41,8 @@
                         </div>
 
                         <DataTable :key="reRender" v-model:server-options="serverOptions" :headers="headers"
-                        buttons-pagination   :loading="isTableLoading"  :items="items" :server-items-length="serverItemsLength"
-                          show-index v-model:items-selected="itemsSelected">
+                            buttons-pagination :loading="isTableLoading" :items="items"
+                            :server-items-length="serverItemsLength" show-index v-model:items-selected="itemsSelected">
 
                             <template #item-name="{ id, name, full_name, url_avatar }">
                                 <div class="py-3 flex items-center justify-start">
@@ -214,38 +219,38 @@ const serverItemsLength = ref(0);
 
 // Các tùy chọn server-side
 const serverOptions = ref({
-  page: 1,
-  rowsPerPage: 10,
-  sortBy: 'created_at',
-  sortType: 'desc',
-  name: '',
+    page: 1,
+    rowsPerPage: 10,
+    sortBy: 'created_at',
+    sortType: 'desc',
+    name: '',
 });
 
 // URL API từ server dựa trên các tùy chọn
 const restApiUrl = computed(() => {
-  const { page, rowsPerPage, sortBy, sortType, name } = serverOptions.value;
-  let url = `/products/load-data-table?page=${page}&per_page=${rowsPerPage}&sortBy=${sortBy}&sortType=${sortType}`;
-  if (name) url += `&name=${name}`;
-  return url;
+    const { page, rowsPerPage, sortBy, sortType, name } = serverOptions.value;
+    let url = `/products/load-data-table?page=${page}&per_page=${rowsPerPage}&sortBy=${sortBy}&sortType=${sortType}`;
+    if (name) url += `&name=${name}`;
+    return url;
 });
 
 // Hàm tải dữ liệu từ server
 const loadFromServer = async () => {
 
-  isTableLoading.value = true;
-  reRender.value++;
+    isTableLoading.value = true;
+    reRender.value++;
 
-  try {
-    const response = await axios.get(restApiUrl.value);
-    await nextTick(); // Đảm bảo render trước khi cập nhật
-    const data = await response.data
-    items.value = data.data;
-    serverItemsLength.value = response.data.total;
-  } catch (error) {
-    console.error(error);
-  } finally {
-    isTableLoading.value = false;
-  }
+    try {
+        const response = await axios.get(restApiUrl.value);
+        await nextTick(); // Đảm bảo render trước khi cập nhật
+        const data = await response.data
+        items.value = data.data;
+        serverItemsLength.value = response.data.total;
+    } catch (error) {
+        console.error(error);
+    } finally {
+        isTableLoading.value = false;
+    }
 };
 // // Watcher cho từng thuộc tính để hạn chế vòng lặp
 // watch(() => serverOptions.value.page, loadFromServer);
@@ -257,15 +262,15 @@ const loadFromServer = async () => {
 
 // Khởi động khi component được mount
 onMounted(() => {
-  loadFromServer();
+    loadFromServer();
 });
 watch(
-      serverOptions,
-      (value) => {
+    serverOptions,
+    (value) => {
         loadFromServer();
-      },
-      { deep: true }
-    );
+    },
+    { deep: true }
+);
 // Các biến liên quan đến tìm kiếm và chọn item
 
 const checkboxDeleteToTrash = ref(false);
@@ -273,115 +278,115 @@ const itemsDelete = ref([]);
 const modalDelete = ref(false);
 const itemsSelected = ref([]);
 const headers = [
-  { text: 'Tên dữ liệu', value: 'name' },
-  { text: 'Hoàn Thành', value: 'is_end' },
-  { text: 'Nổi bật', value: 'highlight' },
-  { text: 'Ẩn Hiện', value: 'status' },
-  { text: 'Hành động', value: 'operation' },
-  { text: 'Tập truyện', value: 'episode' },
+    { text: 'Tên dữ liệu', value: 'name' },
+    { text: 'Hoàn Thành', value: 'is_end' },
+    { text: 'Nổi bật', value: 'highlight' },
+    { text: 'Ẩn Hiện', value: 'status' },
+    { text: 'Hành động', value: 'operation' },
+    { text: 'Tập truyện', value: 'episode' },
 ];
 
 // Hàm xử lý xóa nhiều item
 const deleteItems = async () => {
-  const dataDelete = itemsDelete.value.map(item => item.id);
+    const dataDelete = itemsDelete.value.map(item => item.id);
 
-  try {
-    await axios.post('/delete-items', {
-      tb: 'products',
-      dataId: dataDelete,
-      trash: false,
-    });
-    loadFromServer();
-    modalDelete.value = false;
-    toast.success('Xóa dữ liệu thành công', { autoClose: 1500 });
-  } catch (error) {
-    console.error('Error while deleting items:', error);
-  }
+    try {
+        await axios.post('/delete-items', {
+            tb: 'products',
+            dataId: dataDelete,
+            trash: false,
+        });
+        loadFromServer();
+        modalDelete.value = false;
+        toast.success('Xóa dữ liệu thành công', { autoClose: 1500 });
+    } catch (error) {
+        console.error('Error while deleting items:', error);
+    }
 };
 
 // Hiển thị modal xóa nhiều item
 const showModalDeleteMutipleItem = () => {
-  itemsDelete.value = itemsSelected.value.map(item => ({
-    id: item.id,
-    name: item.name,
-  }));
-  modalDelete.value = true;
+    itemsDelete.value = itemsSelected.value.map(item => ({
+        id: item.id,
+        name: item.name,
+    }));
+    modalDelete.value = true;
 };
 
 // Hiển thị modal xóa item đơn lẻ
 const showModalDeleteItem = (deleteId, deleteName) => {
-  itemsDelete.value = [{ id: deleteId, name: deleteName }];
-  modalDelete.value = true;
+    itemsDelete.value = [{ id: deleteId, name: deleteName }];
+    modalDelete.value = true;
 };
 
 // Hàm thay đổi trạng thái (Ẩn/Hiện)
 const handleStatusChange = async (id, currentStatus) => {
-  if (isTableLoading.value) return; // Tránh gọi trùng lặp
-  isTableLoading.value = true;
+    if (isTableLoading.value) return; // Tránh gọi trùng lặp
+    isTableLoading.value = true;
 
-  try {
-    const newStatus = currentStatus === 1 ? 0 : 1;
-    await axios.post('/change-status', {
-      tb: 'products',
-      id: id,
-      status: newStatus,
-    });
+    try {
+        const newStatus = currentStatus === 1 ? 0 : 1;
+        await axios.post('/change-status', {
+            tb: 'products',
+            id: id,
+            status: newStatus,
+        });
 
-    toast.success(
-      newStatus === 1 ? 'Hiện dữ liệu thành công' : 'Ẩn dữ liệu thành công',
-      { autoClose: 1000 }
-    );
-    loadFromServer();
-  } catch (error) {
-    console.error('Error while changing status:', error);
-  } finally {
-    isTableLoading.value = false;
-  }
+        toast.success(
+            newStatus === 1 ? 'Hiện dữ liệu thành công' : 'Ẩn dữ liệu thành công',
+            { autoClose: 1000 }
+        );
+        loadFromServer();
+    } catch (error) {
+        console.error('Error while changing status:', error);
+    } finally {
+        isTableLoading.value = false;
+    }
 };
 
 // Hàm thay đổi nổi bật (highlight)
 const handleHighlightChange = async (id, highlight) => {
-  if (isTableLoading.value) return; // Tránh gọi trùng lặp
-  isTableLoading.value = true;
+    if (isTableLoading.value) return; // Tránh gọi trùng lặp
+    isTableLoading.value = true;
 
-  try {
-    const newHighlight = highlight === 1 ? 0 : 1;
-    await axios.post('/change-highlight', {
-      tb: 'products',
-      id: id,
-      highlight: newHighlight,
-    });
+    try {
+        const newHighlight = highlight === 1 ? 0 : 1;
+        await axios.post('/change-highlight', {
+            tb: 'products',
+            id: id,
+            highlight: newHighlight,
+        });
 
-    toast.success('Chỉnh sửa highlight thành công!', { autoClose: 1000 });
-    loadFromServer();
-  } catch (error) {
-    console.error('Error while changing highlight:', error);
-  } finally {
-    isTableLoading.value = false;
-  }
+        toast.success('Chỉnh sửa highlight thành công!', { autoClose: 1000 });
+        loadFromServer();
+    } catch (error) {
+        console.error('Error while changing highlight:', error);
+    } finally {
+        isTableLoading.value = false;
+    }
 };
 const handleCompledChange = async (id, is_end) => {
-  if (isTableLoading.value) return; // Tránh gọi trùng lặp
-  isTableLoading.value = true;
-  const value = is_end === 1 ? 0 : 1;
+    if (isTableLoading.value) return; // Tránh gọi trùng lặp
+    isTableLoading.value = true;
+    const value = is_end === 1 ? 0 : 1;
 
-  axios.post(route('Product.ChangeCompleted'), {
-    id: id,
-    is_end: value,
-            })
-                .then((response) => {
-                    loadFromServer();
+    axios.post(route('Product.ChangeCompleted'), {
+        id: id,
+        is_end: value,
+    })
+        .then((response) => {
+            loadFromServer();
 
-                    toast.success(response.data.message, {
-                            autoClose: 2000,
-                        });
-                })
-                .catch((error) => {
-                    toast.error(error.response.data.message, {
-                            autoClose: 1500,
-                        });
-                });
-                isTableLoading.value = false;
+            toast.success(response.data.message, {
+                autoClose: 2000,
+            });
+        })
+        .catch((error) => {
+            toast.error(error.response.data.message, {
+                autoClose: 1500,
+            });
+        });
+    isTableLoading.value = false;
 
 
 };
