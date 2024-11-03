@@ -109,15 +109,23 @@ class ProductController extends Controller
         $reversedArray = array_reverse($chapters);
 
         foreach ($reversedArray as $chapter) {
-            $episode = Episode::firstOrCreate(
-                [
+            $chaptername = $chapter['title'];
+            $chapterSlug = Str::slug($chaptername);
+
+            $episode = Episode::where('product_id', $product->id)
+                ->where(function ($query) use ($chaptername, $chapterSlug) {
+                    $query->where('name', $chaptername)
+                        ->orWhere('slug', $chapterSlug);
+                })
+                ->first();
+
+            if (!$episode) {
+                $episode = Episode::create([
+                    'name' => $chaptername,
+                    'slug' => $chapterSlug,
                     'product_id' => $product->id,
-                    'slug' => Str::slug($chapter['title']),
-                ],
-                [
-                    'name' => $chapter['title'],
-                ]
-            );
+                ]);
+            }
 
             if (!Server::where('episode_id', $episode->id)->exists()) {
                 $this->getImagesFromChapter($client, $chapter['link'], $episode->id);

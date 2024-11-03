@@ -108,17 +108,27 @@ class CrawlManga extends Command
 
 
             $reversedArray = array_reverse($chapters);
-            // Lưu vào cơ sở dữ liệu
+
             foreach ($reversedArray as $chapter) {
-                $episode = Episode::firstOrCreate(
-                    [
+                $chaptername = $chapter['title'];
+                $chapterSlug = Str::slug($chaptername);
+
+                $episode = Episode::where('product_id', $product_id)
+                    ->where(function ($query) use ($chaptername, $chapterSlug) {
+                        $query->where('name', $chaptername)
+                            ->orWhere('slug', $chapterSlug);
+                    })
+                    ->first();
+
+                if (!$episode) {
+                    $episode = Episode::create([
+                        'name' => $chaptername,
+                        'slug' => $chapterSlug,
                         'product_id' => $product_id,
-                        'slug' => Str::slug($chapter['title']),
-                    ],
-                    [
-                        'name' => $chapter['title'],
-                    ]
-                );
+                    ]);
+                }
+
+
                 $server = Server::where('episode_id', $episode->id)->exists();
                 if (!$server) {
 
