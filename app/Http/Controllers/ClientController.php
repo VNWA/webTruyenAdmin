@@ -240,8 +240,11 @@ class ClientController extends Controller
     {
         $company = Company::first(['meta_title', 'meta_desc', 'meta_image']);
         $product = Product::where('slug', $slug)->with(['nation', 'year', 'types', 'episodes'])->first();
-        $meta = $this->setMeta($product->meta_title, $product->meta_desc, $product->meta_image);
+        $meta_title =$product->meta_title ?? $product->name ;
 
+
+
+        $meta = $this->setMeta($meta_title, $product->meta_desc, $product->meta_image);
         return response()->json([
             'meta' => $meta,
             'product' => $product,
@@ -259,6 +262,8 @@ class ClientController extends Controller
             $totalRatings = Rating::where('product_id', $request->product_id)->count();
             $totalRatingPoints = Rating::where('product_id', $request->product_id)->sum('rating');
             $averageRating = $totalRatingPoints / $totalRatings;
+
+
 
             return response()->json(compact('totalRatings', 'averageRating', 'clientRating'), 200);
         } else {
