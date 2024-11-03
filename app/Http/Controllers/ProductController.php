@@ -60,6 +60,7 @@ class ProductController extends Controller
 
         $title = $crawler->filter('div.post-title h1')->text();
         $image = $crawler->filter('.summary_image a img')->attr('data-src');
+        $desc = $crawler->filter('.panel-story-description .dsct ')->text();
         $slug = Str::slug($title);
 
         $product = Product::where('name', $title)
@@ -74,10 +75,11 @@ class ProductController extends Controller
                     'url_avatar' => $image,
                     'name' => $title,
                     'slug' => $slug,
+                    'desc' => $desc,
                 ]);
 
                 foreach ($request->types as $key => $value) {
-                    ProType::firstOrCreate([
+                    ProType::create([
                         'type_id' => $value,
                         'product_id' => $product->id
                     ]);
