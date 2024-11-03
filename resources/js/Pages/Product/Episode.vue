@@ -83,6 +83,13 @@
                             @click="showModalDeleteMutipleItem">
                             <icon :icon="['fas', 'x']" class="mr-1" /> Xóa dữ liệu chọn
                         </button>
+
+
+                        <button :disabled="itemsSelected.length <= 0"
+                            class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-2 rounded mr-4 text-xs"
+                            @click="deleteServers()">
+                            <icon :icon="['fas', 'x']" class="mr-1" /> Xóa server tập truyện
+                        </button>
                     </div>
                 </div>
 
@@ -543,6 +550,34 @@ const deleteItems = async () => {
         console.error('Error while changing status:', error);
     }
 }
+
+const deleteServers = async () => {
+    if (confirm("Xác nhận xóa dữ liệu server các tập truyện được chọn")) {
+        const dataDelete = [];
+
+    itemsSelected.value.forEach(element => {
+        dataDelete.push(element.id)
+    });
+
+
+        console.log(dataDelete)
+        try {
+            const response = await axios.post(route('Episode.Delete.Server', page.props.product.id), {
+                dataId: dataDelete,
+            });
+
+            loadFromServer()
+            modalDelete.value = false;
+            toast.success("Xóa dữ liệu thành công", {
+                autoClose: 1500,
+            });
+
+        } catch (error) {
+            console.error('Error while changing status:', error);
+        }
+    }
+}
+
 const showModalDeleteMutipleItem = () => {
 
     itemsDelete.value = [];

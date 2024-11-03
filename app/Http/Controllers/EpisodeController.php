@@ -166,7 +166,11 @@ class EpisodeController extends Controller
         }
     }
 
-
+    public function deleteServer(Request $request)
+    {
+        DB::table('servers')->whereIn('episode_id', $request->dataId)->delete();
+        return response()->json(['message' => "Xóa thành công"], 200);
+    }
     public function delete(Request $request)
     {
         DB::table('servers')->whereIn('episode_id', $request->dataId)->delete();

@@ -125,6 +125,7 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified',
             Route::get('/load-data-table', [EpisodeController::class, 'loadDataTable']);
             Route::post('/create-mutiple', [EpisodeController::class, 'importMultipleZip'])->name('Episode.Import');
             Route::post('/delete', [EpisodeController::class, 'delete'])->name('Episode.Delete');
+            Route::post('/delete-server-items', [EpisodeController::class, 'deleteServer'])->name('Episode.Delete.Server');
 
             Route::post('/create', [EpisodeController::class, 'create']);
             Route::post('/update/{id}', [EpisodeController::class, 'update'])->name('Episode.Update');

@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 class Product extends Model
 {
     use HasFactory;
-    protected $fillable = ['category_id','nation_id', 'is_end', 'views', 'nation_id', 'status', 'highlight', 'rating_qnt', 'url_avatar', 'url_bg', 'date', 'full_name', 'name', 'slug', 'desc', 'meta_image', 'meta_title', 'meta_desc'];
+    protected $fillable = ['category_id','nation_id', 'is_end', 'views',  'status', 'highlight', 'rating_qnt', 'url_avatar', 'url_bg', 'date', 'full_name', 'name', 'slug', 'desc', 'meta_image', 'meta_title', 'meta_desc'];
     protected $appends = ['newEpisode','countWishlist'];
     public $timestamps = true;
     public function getCountWishlistAttribute()
