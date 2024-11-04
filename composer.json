@@ -17,6 +17,7 @@
         "laravel/framework": "^10.10",
         "laravel/jetstream": "^4.1",
         "laravel/sanctum": "^3.3",
+        "laravel/socialite": "^5.16",
         "laravel/tinker": "^2.8",
         "league/flysystem-sftp-v3": "^3.0",
         "symfony/process": "^6.4",

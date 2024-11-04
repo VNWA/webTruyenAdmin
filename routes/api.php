@@ -28,7 +28,7 @@ Route::prefix('v1')->group(function () {
     Route::get('get-data-web', [ClientController::class, 'getDataWeb']);
     Route::get('get-data-home', [ClientController::class, 'getDataHome']);
     Route::get('get-data-products', [ClientController::class, 'getProducts']);
-        Route::get('get-data-products-in-filter', [ClientController::class, 'getProductsInFilter']);
+    Route::get('get-data-products-in-filter', [ClientController::class, 'getProductsInFilter']);
 
     Route::get('get-detail-product/{slug}', [ClientController::class, 'getDetailProduct']);
     Route::get('get-wishlist-count-with-product/{slug}', [ClientController::class, 'getWishlistCountWithProduct']);
@@ -46,6 +46,9 @@ Route::prefix('v1')->group(function () {
 
     Route::post('/register', [CustomerController::class, 'register']);
     Route::post('/login', [CustomerController::class, 'login']);
+
+    Route::get('/get-login-social-services', [ClientController::class, 'socialLoginServices']);
+
     Route::middleware(['auth:sanctum'])->group(function () {
 
 
