@@ -122,6 +122,32 @@ class CustomerController extends Controller
 
         return response()->json(['message' => "Add Bookmark Success"], 201);
     }
+public function checkProductIsWishlist(Request $request, $slug)
+{
+    // Kiểm tra xem người dùng đã đăng nhập chưa
+    if (!$request->user()) {
+        return response()->json(['message' => 'Please Login'], 401);
+    }
+
+    $customer = $request->user();
+
+    // Tìm sản phẩm dựa theo slug đã gửi từ request
+    $product = Product::where('slug', $slug)->first();
+
+    // Kiểm tra xem sản phẩm có tồn tại không
+    if (!$product) {
+        return response()->json(['message' => 'Product not found'], 404);
+    }
+
+    // Kiểm tra sản phẩm đã có trong wishlist chưa
+    $wishlistStatus = Wishlist::where('product_id', $product->id)
+        ->where('customer_id', $customer->id)
+        ->exists(); // Sử dụng exists() thay vì exit()
+
+    // Trả về kết quả dưới dạng JSON
+    return response()->json(['status' => $wishlistStatus], 200);
+}
+
 
     public function register(Request $request)
     {
