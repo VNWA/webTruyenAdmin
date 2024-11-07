@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AppearanceController;
 use App\Http\Controllers\TestController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -50,6 +51,11 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified',
     Route::post('/get-data-ward/{id}', [VinawebappController::class, 'getDataWard']);
     Route::get('/dashboard', [VinawebappController::class, 'showDashboard'])->name('dashboard');
 
+
+    Route::prefix('appearance')->group(function () {
+        Route::get('/ads-banners', [AppearanceController::class, 'AdsBannerShow'])->name('AdsBanner');
+        Route::post('/ads-banners', [AppearanceController::class, 'AdsBannerUpdate'])->name('AdsBanner.Update');
+    });
     // start Company
     Route::prefix('company')->group(function () {
         Route::get('', [CompanyController::class, 'showCompany'])->name('Company');
@@ -118,8 +124,8 @@ Route::middleware(['auth:sanctum', config('jetstream.auth_session'), 'verified',
         Route::post('/change-completed', [ProductController::class, 'ChangeCompleted'])->name('Product.ChangeCompleted');
         Route::get('/edit/{id}', [ProductController::class, 'showEdit'])->name('Product.Edit');
         Route::post('/edit/{id}', [ProductController::class, 'update']);
-        Route::get( '/crawl', [ProductController::class, 'showCrawlProduct'])->name('Product.Crawl.Show');
-        Route::post( '/crawl', [ProductController::class, 'ImportCrawlProduct'])->name('Product.Crawl.Import');
+        Route::get('/crawl', [ProductController::class, 'showCrawlProduct'])->name('Product.Crawl.Show');
+        Route::post('/crawl', [ProductController::class, 'ImportCrawlProduct'])->name('Product.Crawl.Import');
 
         Route::prefix('episode/{product_id}')->group(function () {
 

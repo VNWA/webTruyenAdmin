@@ -1,5 +1,5 @@
 <template>
-    <aside id="sidebar" :class="{ active: sideBarActive }" class="w-full p-1  dark:bg-gray-900 dark:text-gray-100 h-auto">
+    <aside id="sidebar" :class="{ active: sideBarActive }" class="w-full p-1  bg-gray-900 text-gray-100 h-auto">
         <div class="sidebar-header">
 
             <div class="logo">
@@ -21,26 +21,26 @@
                 <li class="mb-3">
                     <SideBarLink :href="route('dashboard')" :active="check('/dashboard')">
                         <icon icon="fa-home" class="mr-2" />
-                        <span class="show  font-semibold text-slate-900 dark:text-slate-200">Trang chủ</span>
+                        <span class="show  font-semibold text-slate-200">Trang chủ</span>
                     </SideBarLink>
                 </li>
                 <li class="mb-3">
-                    <SideBarLink :href="route('ProductBanner')" :active="check('/product-banner')">
+                    <SideBarLink :href="route('AdsBanner')" :active="route().current('AdsBanner')">
                         <icon icon="fa-image" class="mr-2" />
-                        <span class="show  font-semibold text-slate-900 dark:text-slate-200">Banner</span>
+                        <span class="show  font-semibold text-slate-200">ADS Banner</span>
                     </SideBarLink>
                 </li>
                 <!-- <li class="mb-3">
                     <SideBarLink :href="route('Category')" :active="check('/category')">
                         <icon icon="fa-list" class="mr-2" />
-                        <span class="show  font-semibold text-slate-900 dark:text-slate-200">Danh mục</span>
+                        <span class="show  font-semibold text-slate-200">Danh mục</span>
                     </SideBarLink>
                 </li> -->
                 <!-- <li class="mb-3">
                     <SideBarLink :href="route('Year')" :active="check('/year')">
                         <icon icon="fa-calendar-days" class="mr-2" />
 
-                        <span class="show  font-semibold text-slate-900 dark:text-slate-200">Năm</span>
+                        <span class="show  font-semibold text-slate-200">Năm</span>
                     </SideBarLink>
                 </li> -->
 
@@ -48,19 +48,19 @@
                     <SideBarLink :href="route('Nation')" :active="check('/nation')">
                         <icon icon="fa-location-dot" class="mr-2" />
 
-                        <span class="show  font-semibold text-slate-900 dark:text-slate-200">Quốc gia</span>
+                        <span class="show  font-semibold text-slate-200">Quốc gia</span>
                     </SideBarLink>
                 </li>
                 <li class="mb-3">
                     <SideBarLink :href="route('Type')" :active="check('/type')">
                         <icon icon="fa-table-list" class="mr-2" />
-                        <span class="show  font-semibold text-slate-900 dark:text-slate-200">Thể loại</span>
+                        <span class="show  font-semibold text-slate-200">Thể loại</span>
                     </SideBarLink>
                 </li>
                 <li class="mb-3">
                     <SideBarLink :href="route('Product')" :active="check('/product')">
                         <icon icon="fa-film" class="mr-2" />
-                        <span class="show  font-semibold text-slate-900 dark:text-slate-200">Truyện</span>
+                        <span class="show  font-semibold text-slate-200">Truyện</span>
                     </SideBarLink>
                 </li>
 

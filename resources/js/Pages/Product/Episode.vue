@@ -363,7 +363,6 @@ const deleteFileUpload = (file) => {
 const uploadFiles = async () => {
 
     isPageLoading.value = true;
-    console.log(page.props.product.id)
     if (files.value.length === 0) {
         toast.success('Chọn ít nhất 1 file zip');
 

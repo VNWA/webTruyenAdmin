@@ -49,6 +49,11 @@ class CrawlManga extends Command
                 }
                 $link = $node->filter('a')->attr('href');
                 $title = $node->filter('h3.tt a')->text();
+                   if (stripos($title, 'raw') !== false) {
+                $this->info('Skipping product with title: ' . $title); // Thông báo bỏ qua sản phẩm
+                return;
+            }
+
                 $image = $node->filter('.thumb-manga a img')->attr('data-src');
                 $slug = Str::slug($title);
 
@@ -98,14 +103,15 @@ class CrawlManga extends Command
                 $chapterTitle = $node->filter('a')->text();
                 $chapterNumber = $this->extractChapterNumber($chapterTitle); // Lấy số chương từ tiêu đề
 
-                // Thêm vào mảng các chương
-                $chapters[] = [
-                    'link' => 'https://manga18fx.com/' . $chapterLink,
-                    'title' => $chapterTitle,
-                    'number' => $chapterNumber
-                ];
+                // Thêm vào mảng các chương nếu hợp lệ
+                if (preg_match('/^Chapter \d+$/', $chapterTitle) && !preg_match('/raw/i', $chapterTitle)) {
+                    $chapters[] = [
+                        'link' => 'https://manga18fx.com/' . $chapterLink,
+                        'title' => $chapterTitle,
+                        'number' => $chapterNumber
+                    ];
+                }
             });
-
 
             $reversedArray = array_reverse($chapters);
 
@@ -128,16 +134,15 @@ class CrawlManga extends Command
                     ]);
                 }
 
-
                 $server = Server::where('episode_id', $episode->id)->exists();
                 if (!$server) {
-
                     $this->getImagesFromChapter($chapter['link'], $episode->id);
                 }
             }
 
             return array_reverse($chapters); // Ngược lại để giữ thứ tự từ mới đến cũ
         } catch (\Exception $e) {
+            // Xử lý lỗi
             $this->error('Error fetching chapters: ' . $e->getMessage());
             return [];
         }

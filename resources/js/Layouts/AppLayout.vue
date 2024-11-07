@@ -10,7 +10,6 @@ import ResponsiveNavLink from '@/Components/ResponsiveNavLink.vue';
 import SideBar from '@/Components/SideBar.vue';
 import { usePage } from '@inertiajs/vue3';
 const page = usePage();
-console.log(page)
 defineProps({
     title: String,
 });

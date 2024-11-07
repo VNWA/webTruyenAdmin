@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Appearance;
 use App\Models\Wishlist;
 use Illuminate\Http\Request;
 use App\Models\Company;
@@ -152,10 +153,11 @@ class ClientController extends Controller
             ->limit(11)
             ->get();
 
-        // Trả về JSON response
+        $appearance = Appearance::where('type', 'banner_ads')->first();
+        $adsBanner = $appearance->value;
 
         $meta = $this->setMeta();
-        return response()->json(compact('highlightProducts', 'newProducts', 'rawProducts', 'subProducts', 'meta'), 200);
+        return response()->json(compact('highlightProducts', 'newProducts', 'rawProducts', 'subProducts', 'meta', 'adsBanner'), 200);
     }
 
     function getTrendingProducts()
@@ -240,7 +242,7 @@ class ClientController extends Controller
     {
         $company = Company::first(['meta_title', 'meta_desc', 'meta_image']);
         $product = Product::where('slug', $slug)->with(['nation', 'year', 'types', 'episodes'])->first();
-        $meta_title =$product->meta_title ?? $product->name ;
+        $meta_title = $product->meta_title ?? $product->name;
 
 
 
