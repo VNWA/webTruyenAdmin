@@ -137,6 +137,124 @@
                             </div>
 
                         </div>
+
+                        <div class="">
+                            <h3 class="block mb-2 font-bold text-base  text-gray-900 dark:text-dark capitalize">
+                                Manga Info
+                            </h3>
+                            <div>
+                                <div class="flex items-center justify-start gap-2 mb-5">
+                                    <input type="checkbox" id="mangaInfoIsImage" :true-value="0" :false-value="1"
+                                        v-model="form.product.isImage">
+                                    <label for="mangaInfoIsImage">Nhúng Iframe ?</label>
+                                </div>
+                                <div v-if="form.product.isImage == 0">
+
+                                    <TextArea v-model="form.product.iframe" cols="30" rows="3"
+                                        placeholder="Nhúng iframe"></TextArea>
+                                </div>
+                                <div v-else>
+                                    <div class="mb-3">
+                                        <InputLabel value="Link" for="mangaInfoLink" />
+                                        <TextInput v-model="form.product.link" id="mangaInfoLink" />
+                                    </div>
+                                    <div class="mb-3">
+                                        <InputLabel value="Image" for="mangaInfoImage" />
+                                        <InputImage v-model="form.product.image" />
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="">
+                            <h3 class="block mb-2 font-bold text-base  text-gray-900 dark:text-dark capitalize">
+                                Top Chapter
+                            </h3>
+                            <div>
+                                <div class="flex items-center justify-start gap-2 mb-5">
+                                    <input type="checkbox" id="episodeOneIsImage" :true-value="0" :false-value="1"
+                                        v-model="form.episode_one.isImage">
+                                    <label for="episodeOneIsImage">Nhúng Iframe ?</label>
+                                </div>
+                                <div v-if="form.episode_one.isImage == 0">
+
+                                    <TextArea v-model="form.episode_one.iframe" cols="30" rows="3"
+                                        placeholder="Nhúng iframe"></TextArea>
+                                </div>
+                                <div v-else>
+                                    <div class="mb-3">
+                                        <InputLabel value="Link" for="episodeOneLink" />
+                                        <TextInput v-model="form.episode_one.link" id="episodeOneLink" />
+                                    </div>
+                                    <div class="mb-3">
+                                        <InputLabel value="Image" for="episodeOneImage" />
+                                        <InputImage v-model="form.episode_one.image" />
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="">
+                            <h3 class="block mb-2 font-bold text-base  text-gray-900 dark:text-dark capitalize">
+                                Middle Chapter
+                            </h3>
+                            <div>
+                                <div class="flex items-center justify-start gap-2 mb-5">
+                                    <input type="checkbox" id="episodeTwoIsImage" :true-value="0" :false-value="1"
+                                        v-model="form.episode_two.isImage">
+                                    <label for="episodeTwoIsImage">Nhúng Iframe ?</label>
+                                </div>
+                                <div v-if="form.episode_two.isImage == 0">
+
+                                    <TextArea v-model="form.episode_two.iframe" cols="30" rows="3"
+                                        placeholder="Nhúng iframe"></TextArea>
+                                </div>
+                                <div v-else>
+                                    <div class="mb-3">
+                                        <InputLabel value="Link" for="episodeTwoLink" />
+                                        <TextInput v-model="form.episode_two.link" id="episodeTwoLink" />
+                                    </div>
+                                    <div class="mb-3">
+                                        <InputLabel value="Image" for="episodeTwoImage" />
+                                        <InputImage v-model="form.episode_two.image" />
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                        <div class="">
+                            <h3 class="block mb-2 font-bold text-base  text-gray-900 dark:text-dark capitalize">
+                               End Chapter
+                            </h3>
+                            <div>
+                                <div class="flex items-center justify-start gap-2 mb-5">
+                                    <input type="checkbox" id="episodeThreeIsImage" :true-value="0" :false-value="1"
+                                        v-model="form.episode_three.isImage">
+                                    <label for="episodeThreeIsImage">Nhúng Iframe ?</label>
+                                </div>
+                                <div v-if="form.episode_three.isImage == 0">
+
+                                    <TextArea v-model="form.episode_three.iframe" cols="30" rows="3"
+                                        placeholder="Nhúng iframe"></TextArea>
+                                </div>
+                                <div v-else>
+                                    <div class="mb-3">
+                                        <InputLabel value="Link" for="episodeThreeLink" />
+                                        <TextInput v-model="form.episode_three.link" id="episodeThreeLink" />
+                                    </div>
+                                    <div class="mb-3">
+                                        <InputLabel value="Image" for="episodeThreeImage" />
+                                        <InputImage v-model="form.episode_three.image" />
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+
                     </div>
                 </div>
             </div>
@@ -176,6 +294,29 @@ const form = ref({
         isImage: 0
     },
     top_new_manga: {
+        iframe: '',
+        image: '',
+        link: '/',
+        isImage: 0
+    },
+    product: {
+        iframe: '',
+        image: '',
+        link: '/',
+        isImage: 0
+    },
+    episode_one: {
+        iframe: '',
+        image: '',
+        link: '/',
+        isImage: 0
+    }, episode_two: {
+        iframe: '',
+        image: '',
+        link: '/',
+        isImage: 0
+    }
+    , episode_three: {
         iframe: '',
         image: '',
         link: '/',

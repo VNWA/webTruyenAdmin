@@ -43,8 +43,33 @@ class AppearanceOneSeeder extends Seeder
                     'image' => '',
                     'link' => '/',
                     'isImage' => 0
+                ],
+                'product' => [
+                    'iframe' => '',
+                    'image' => '',
+                    'link' => '/',
+                    'isImage' => 0
+                ],
+                'episode_one' => [
+                    'iframe' => '',
+                    'image' => '',
+                    'link' => '/',
+                    'isImage' => 0
+                ],
+                'episode_two' => [
+                    'iframe' => '',
+                    'image' => '',
+                    'link' => '/',
+                    'isImage' => 0
+                ],
+                'episode_three' => [
+                    'iframe' => '',
+                    'image' => '',
+                    'link' => '/',
+                    'isImage' => 0
                 ]
             ],
         ]);
+
     }
 }
