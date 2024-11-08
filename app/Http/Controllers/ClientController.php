@@ -244,12 +244,14 @@ class ClientController extends Controller
         $product = Product::where('slug', $slug)->with(['nation', 'year', 'types', 'episodes'])->first();
         $meta_title = $product->meta_title ?? $product->name;
 
-
+        $appearance = Appearance::where('type', 'banner_ads')->first();
+        $adsBanner = $appearance->value;
 
         $meta = $this->setMeta($meta_title, $product->meta_desc, $product->meta_image);
         return response()->json([
             'meta' => $meta,
             'product' => $product,
+            'adsBannerProduct' => $adsBanner['product'] ?? [],
         ], 200);
     }
 
@@ -306,7 +308,11 @@ class ClientController extends Controller
 
         $meta = $this->setMeta($meta_title, $product->meta_desc, $product->meta_image);
 
-
+        $appearance = Appearance::where('type', 'banner_ads')->first();
+        $adsBanner = $appearance->value;
+        $adsBannerTop = $appearance['episode_one'] ?? [];
+        $adsBannerMiddle = $appearance['episode_two'] ?? [];
+        $adsBannerEnd = $appearance['episode_three'] ?? [];
         // Trả về response JSON
         return response()->json([
             'meta' => $meta,
@@ -316,6 +322,9 @@ class ClientController extends Controller
             'next_episode' => $nextEpisode,
             'product_name' => $product->name,
             'product_desc' => $product->desc,
+            'adsBannerTop' => $adsBannerTop,
+            'adsBannerMiddle' => $adsBannerMiddle,
+            'adsBannerEnd' => $adsBannerEnd,
         ], 200);
     }
 
