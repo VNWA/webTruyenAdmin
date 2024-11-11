@@ -18,6 +18,10 @@
                             </button>
                         </div>
                         <div class=" text-xs uppercase flex justify-end gap-4">
+                            <button class="bg-gray-600 hover:bg-gray-700 text-white font-bold py-2 px-2 rounded"
+                                @click="loadFromServer()">
+                                <icon :icon="['fas', 'rotate-right']" class="mr-1" /> Load Lại Dữ liệu
+                            </button>
                             <Link :href="route('Product.Crawl.Show')"
                                 class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-2 rounded ">
                             <icon :icon="['fas', 'plus']" /> Crawl manga
@@ -49,10 +53,10 @@
                                     <img :src="url_avatar" alt="vinawebapp.com"
                                         class="w-20 h-auto mr-3 xl:block hidden">
                                     <div>
-                                        <Link :href="route('Product.Edit', id)">
-                                        <span class=" block text-sm font-bold">{{ name }}</span>
-                                        <span class=" block text-sm font-bold text-black/50">{{ full_name }}</span>
-                                        </Link>
+                                        <a target="_blank" :href="route('Product.Edit', id)">
+                                            <span class=" block text-sm font-bold">{{ name }}</span>
+                                            <span class=" block text-sm font-bold text-black/50">{{ full_name }}</span>
+                                        </a>
 
                                     </div>
                                 </div>
@@ -121,10 +125,10 @@
                                         @click="showModalDeleteItem(id, name)">
                                         <icon :icon="['fas', 'x']" />
                                     </button>
-                                    <Link :href="route('Product.Edit', id)"
+                                    <a target="_blank" :href="route('Product.Edit', id)"
                                         class="bg-yellow-600 text-white px-2 py-1 rounded-md mr-5">
                                     <icon :icon="['fas', 'pen-to-square']" />
-                                    </Link>
+                                    </a>
                                 </div>
                             </template>
 
